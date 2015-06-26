@@ -1,0 +1,22 @@
+
+UrbanCode properties
+
+
+http://pic.dhe.ibm.com/infocenter/ucdeploy/v6r0/index.jsp?topic=%2Fcom.ibm.udeploy.reference.doc%2Ftopics%2Fud_properties.html
+
+
+Scopes:
+
+* Application
+* > Properties
+* Process
+** > Properties
+* Components
+** > Properties
+** > Environment Properties
+** > Resource Properties
+** > Version Properties
+* Environments
+* > Properties
+
+

@@ -1,0 +1,1193 @@
+<!--
+/*******************************************************************************
+ * Licensed Materials - Property of IBM
+ * (c) Copyright IBM Corporation 2010. All Rights Reserved. 
+ * 
+ * Note to U.S. Government Users Restricted Rights:  Use, 
+ * duplication or disclosure restricted by GSA ADP Schedule 
+ * Contract with IBM Corp.
+ *******************************************************************************/
+-->
+<!--
+This example is used to build the JKE sample application.
+-->
+
+<project name="Build and test the JKE sample application" default="all">
+  <!--
+	<property name="userId" value="build" />
+	<property name="password" value="build" />
+	-->
+	<property name="userId" value="builduser" />
+	<property name="passwordFile" value="/etc/jbe/conf/jbe_password" />
+	<property name="loadDir" value="${basedir}/../.." />
+	<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter" />
+	<property name="build.debuglevel" value="lines,vars,source"/> 
+	<property name="destdir" value="${loadDir}/build" />
+	<property name="destdir.bin" value="${loadDir}/build/bin" />
+	<property name="destdir.distro" value="${loadDir}/build/distro" />
+	<property name="destdir.distro.libs" value="${loadDir}/build/distro/libs" />
+	<property name="destdir.tests" value="${loadDir}/build/tests" />
+	<property name="destdir.tests.unit" value="${loadDir}/build/tests/unit" />
+	<property name="destdir.tests.functional" value="${loadDir}/build/tests/functional" />
+	<property name="compilelog" value="${destdir}/compile.xml" />
+	<property name="destdir.db" value="${loadDir}/build/db" />
+	<property name="destdir.gh-test" value="${loadDir}/build/gh-test" />
+	
+	<property name="udclient.username" value="admin"/>
+	<property name="udclient.password" value="admin"/>
+	<property name="udclient.weburl" value="https://192.168.142.2:8443"/>
+	<property name="udclient.verbose" value="-v"/>
+	
+	<property name="unitTestsFailed" value="false"/>
+	<property name="ritTestsFailed" value="false"/>
+	
+	<echo>version=${ant.version}</echo>
+
+	<target name="all"
+		depends="push,unit-tests,deploy" /> 
+	
+	<target name="clean">
+		
+		<echo message="loadDir=${loadDir}" />
+		
+		<delete dir="${destdir}" />
+		<mkdir dir="${destdir}" />
+		<mkdir dir="${destdir.bin}" />
+		<mkdir dir="${destdir.distro}" />
+		<mkdir dir="${destdir.distro.libs}" />
+		<mkdir dir="${destdir.db}" />
+		<mkdir dir="${destdir.gh-test}" />
+		<mkdir dir="${destdir.tests}" />
+		<mkdir dir="${destdir.tests.unit}" />
+		<mkdir dir="${destdir.tests.functional}" />
+		
+	</target>
+
+	<target name="web" depends="clean">
+		
+		<!--
+		<echoproperties />
+		
+		<teamAccept 
+			repositoryAddress="${repositoryAddress}"
+			workspaceUUID="${workspaceUUID}"
+            buildResultUUID="${buildResultUUID}"
+            snapshotName="${buildResultId}"
+            verbose="true"
+            userId="${userId}"
+			password="${password}" />
+		-->
+		
+		<startBuildActivity
+			activityIdProperty="parentActivity"
+			label="Building application"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="compileActivity"
+			parentActivityID="${parentActivity}"
+			label="Compiling"
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<property name="applibsdir" value ="${loadDir}/JKEPrereqJars"/>
+		<property name="buildlibsdir" value ="${loadDir}/JKEBuildScripts/libs"/>
+		<property name="buildbatsdir" value ="${loadDir}/JKEBuildLibs/bats"/>
+		<property name="classpath" value="${applibsdir}/derby.jar;${applibsdir}/swt-gtk-linux-x86_64/swt.jar;${applibsdir}/junit.jar;${applibsdir}/com.ibm.team.json_1.0.0.I200908182153.jar;${applibsdir}/org.mortbay.jetty.server_6.1.23.v201004211559.jar;${applibsdir}/org.mortbay.jetty.util_6.1.23.v201004211559.jar;${applibsdir}/javax.servlet_2.5.0.v200910301333.jar"/>
+		<javac destdir="${destdir.bin}" classpath="${classpath}"
+			debug="on" nowarn="on" failonerror="false" source="1.5" target="1.5">
+			<src path="${loadDir}/JKEBusinessData" />
+			<src path="${loadDir}/JKEBusinessLogic" />
+			<src path="${loadDir}/JKEBusinessLogicTests" />
+			<src path="${loadDir}/JKEDBAccess" />
+			<src path="${loadDir}/JKEJavaUI" />
+			<src path="${loadDir}/JKEServer" />
+			<compilerarg value="-log" /> 
+			<compilerarg value="${compilelog}" /> 			
+		</javac>
+		
+		<jdtCompileLogPublisher 
+					buildResultUUID="${buildResultUUID}"
+		            repositoryAddress="${repositoryAddress}"
+		            userId="${userId}"
+		            password="${password}"
+		            filePath="${compilelog}" />
+		
+		<copy todir="${destdir.bin}">
+					<fileset dir="${loadDir}/JKEDBAccess/src">
+						<include name="**/*.properties"/>
+					</fileset>
+		</copy>
+		
+		<startBuildActivity
+			activityIdProperty="testActivity"
+			parentActivityID="${parentActivity}"
+			label="Running unit tests"
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+
+		<junit failureproperty="unitTestsFailed">
+			<classpath path="${classpath};${destdir.bin}"/>
+			<test name="com.jke.junit.AllTests"
+				todir="${destdir.tests.unit}"
+				outfile="jke.core.result">
+				<formatter type="xml" /> 
+			</test>
+		</junit>
+		
+		<junitResultPublisher
+			buildResultUUID="${buildResultUUID}"
+		 	repositoryAddress="${repositoryAddress}"
+		 	userId="${userId}"
+		 	password="${password}"
+		 	filePath="${destdir.tests.unit}/jke.core.result.xml"
+	 		verbose="true"
+	 		failOnError="false"	 	
+		/>
+		
+		<!--
+			Package things up and attach to the build result
+		-->
+		
+		<startBuildActivity
+			activityIdProperty="zip"
+			parentActivityID="${parentActivity}"
+			label="Packaging deployable application"
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<copy todir="${destdir.bin}">
+			<fileset dir="${loadDir}/JKEJavaUI/src">
+				<include name="**/*.gif"/>
+				<include name="**/*.png"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.bmp"/>
+			</fileset>
+		</copy>
+		
+		<copy todir="${destdir.distro.libs}">
+			<fileset dir="${applibsdir}">
+				<include name="**/*.jar"/>
+			</fileset>
+		</copy>
+		
+		<copy todir="${destdir.distro.libs}">
+			<dirset dir="${applibsdir}">
+				<include name="swt*"/>
+			</dirset>
+		</copy>
+		
+		<copy todir="${destdir.distro}">
+			<fileset dir="${loadDir}/JKEBuildScripts/start">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		
+		<chmod dir="${destdir.distro}" perm="ugo+rx" includes="**/*.sh"/>
+		
+		<filter token="buildLabel" value="${buildLabel}"/>
+		<filter token="buildTimestamp" value="${buildTimestamp}"/>
+		<copy todir="${destdir.distro}/web" filtering="true">
+			<fileset dir="${loadDir}/JKEWebUI/WebContent">
+				<include name="**/*"/>
+				<!-- don't copy binary content w/ filtering turned on, corrupts files -->
+				<exclude name="**/*.png"/>
+				<exclude name="**/*.jpg"/>
+				<exclude name="**/*.gif"/>
+			</fileset>
+		</copy>	
+		
+		<!-- now copy binary content without filtering turned off -->
+		<copy todir="${destdir.distro}/web">
+			<fileset dir="${loadDir}/JKEWebUI/WebContent">
+				<include name="**/*.png"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.gif"/>
+			</fileset>
+		</copy>	
+		
+		<!-- generate special "build" file so we know which build has been deployed -->
+		<touch file="${destdir.distro}/web/${buildTimestamp}"/>
+
+		<jar
+			destfile="${destdir.distro}/jke.jar"			
+			basedir="${destdir.bin}">
+			<manifest>
+				<attribute name="Built-By" value="Sample Build User"/>
+				<attribute name="Main-class" value="com.jke.ui.JKEBanking"/>
+			</manifest>
+		</jar>
+		
+		<zip
+			basedir="${destdir.distro}"
+			destfile="${destdir}/jke-${buildTimestamp}.zip"
+			excludes="*.zip"/>
+
+		<artifactPublisher
+			userId="${userId}"
+			password="${password}"
+			repositoryAddress="${repositoryAddress}"
+			buildResultUUID="${buildResultUUID}"
+			verbose="true"
+			filePath="${destdir}/jke-${buildTimestamp}.zip"
+			label="JKE Banking Business Recovery that Matters (all platforms)" />
+		
+		<completeBuildActivity activityId="${parentActivity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+	
+	</target>
+	
+	<target name="db" depends="clean">
+		
+		<startBuildActivity
+			activityIdProperty="parentActivity"
+			label="Building application database scripts"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="zip"
+			parentActivityID="${parentActivity}"
+			label="Packaging application database scripts"
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+				
+		<copy todir="${destdir.db}">
+	        <fileset dir="${loadDir}/JKEDBAccess/scripts">
+	        	<include name="**/*.sql"/>
+	       	</fileset>
+		</copy>
+	        		
+		<zip
+			basedir="${destdir.db}"
+			destfile="${destdir}/jke-db-${buildTimestamp}.zip"
+			excludes="*.zip"/>
+
+		<artifactPublisher
+			userId="${userId}"
+			password="${password}"
+			repositoryAddress="${repositoryAddress}"
+			buildResultUUID="${buildResultUUID}"
+			verbose="true"
+			filePath="${destdir}/jke-db-${buildTimestamp}.zip"
+			label="JKE Banking Business Recovery that Matters (database scripts)" />
+		
+		<completeBuildActivity activityId="${parentActivity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+	</target>
+	
+	<target name="gh-test" depends="clean">
+		
+		<startBuildActivity
+			activityIdProperty="parentActivity"
+			label="Preparing GreenHat test scripts"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="zip"
+			parentActivityID="${parentActivity}"
+			label="Packaging GreenHat test scripts"
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+				
+		<copy todir="${destdir.gh-test}">
+	        <fileset dir="${loadDir}">
+	        	<include name="JKERITVirtualizationTests/**"/>
+	       	</fileset>
+		</copy>
+	        		
+		<zip
+			basedir="${destdir.gh-test}"
+			destfile="${destdir}/jke-gh-test-${buildTimestamp}.zip"
+			excludes="*.zip"/>
+
+		<artifactPublisher
+			userId="${userId}"
+			password="${password}"
+			repositoryAddress="${repositoryAddress}"
+			buildResultUUID="${buildResultUUID}"
+			verbose="true"
+			filePath="${destdir}/jke-gh-test-${buildTimestamp}.zip"
+			label="JKE Banking Business Recovery that Matters (GreenHat test scripts)" />
+		
+		<completeBuildActivity activityId="${parentActivity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+	</target>
+	
+	<target name="push" depends="db,web,gh-test">
+		
+		<startBuildActivity
+			activityIdProperty="push.activity"
+			label="Pushing component artifacts to uDeploy"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="push.jke.db"
+			parentActivityID="${push.activity}"
+			label="Pushing jke.db artifacts with new version ${buildTimestamp}..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+			
+		<!-- create new version for jke.db component -->
+		<exec executable="/bin/bash" outputproperty="jke.db.component.output">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="createVersion"/>
+			<arg value="-component"/>
+			<arg value="jke.db"/>
+			<arg value="-name"/>
+			<arg value="${buildTimestamp}"/>
+		</exec>
+		
+		<!-- This uses Rhino - an Open Source implementation of JavaScript written in Java - to parse JSON. -->
+		<script language="javascript">
+			<![CDATA[
+			
+		    json = project.getProperty("jke.db.component.output");
+			
+			echo = project.createTask("echo");
+			echo.setMessage("Parsing Response:");
+			echo.perform();
+			echo = project.createTask("echo");
+			echo.setMessage(json);
+			echo.perform();
+
+		    // Parse JSON response
+		    obj = JSON.parse(json);
+
+	        // retrieve the new component version id
+			id = obj.id;
+			echo = project.createTask("echo");
+			echo.setMessage("jke.db.component.id=" + id);
+			echo.perform();
+			
+			// set project property to be used later for request status lookups
+			project.setProperty("jke.db.component.id", id);
+
+			]]>
+		</script>
+		
+		<!-- add files to new version of jke.db component -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionFiles"/>
+			<arg value="-component"/>
+			<arg value="jke.db"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-base"/>
+			<arg value="${destdir.db}"/>
+		</exec>
+		
+		<!-- add back-link for Build Forge Job -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.db"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="Build Forge Job"/>
+			<arg value="-link"/>
+			<arg value="http://${buildForgeServer}/fullcontrol/index.php?mod=jobs&#038;action=build.view&#038;bf_id=${buildForgeBuildId}"/>
+		</exec>
+		
+		<!-- add back-link for RTC Build Result -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.db"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="RTC Build Result"/>
+			<arg value="-link"/>
+			<arg value="${repositoryAddress}/web/projects/JKE%20-%20Money%20that%20Matters%20(Change%20Management)#action=com.ibm.team.build.viewResult&#038;id=${buildResultUUID}"/>
+		</exec>
+		
+		<!-- Publish Link to built uDeploy Component Version on RTC Build Result -->
+		<linkPublisher 
+		 	label="IBM UC Deploy Component (jke.db)" 
+		 	url="${udclient.weburl}/#version/${jke.db.component.id}" 
+		 	buildResultUUID="${buildResultUUID}" 
+		 	repositoryAddress="${repositoryAddress}" 
+		 	userId="${userId}" 
+		 	password="${password}" 
+		 	failOnError="false" />
+		
+		<startBuildActivity
+			activityIdProperty="push.jke.web"
+			parentActivityID="${push.activity}"
+			label="Pushing jke.web artifacts with new version ${buildTimestamp}..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<!-- create new version for jke.web component -->
+		<exec executable="/bin/bash" outputproperty="jke.web.component.output">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="createVersion"/>
+			<arg value="-component"/>
+			<arg value="jke.web"/>
+			<arg value="-name"/>
+			<arg value="${buildTimestamp}"/>
+		</exec>
+		
+		<!-- This uses Rhino - an Open Source implementation of JavaScript written in Java - to parse JSON. -->
+		<script language="javascript">
+			<![CDATA[
+			
+		    json = project.getProperty("jke.web.component.output");
+			
+			echo = project.createTask("echo");
+			echo.setMessage("Parsing Response:");
+			echo.perform();
+			echo = project.createTask("echo");
+			echo.setMessage(json);
+			echo.perform();
+
+		    // Parse JSON response
+		    obj = JSON.parse(json);
+
+	        // retrieve the new component version id
+			id = obj.id;
+			echo = project.createTask("echo");
+			echo.setMessage("jke.web.component.id=" + id);
+			echo.perform();
+			
+			// set project property to be used later for request status lookups
+			project.setProperty("jke.web.component.id", id);
+
+			]]>
+		</script>
+		
+		<!-- add files to new version of jke.web component -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionFiles"/>
+			<arg value="-component"/>
+			<arg value="jke.web"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-base"/>
+			<arg value="${destdir.distro}"/>
+		</exec>
+		
+		<!-- add back-link for Build Forge Job -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.web"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="Build Forge Job"/>
+			<arg value="-link"/>
+			<arg value="http://${buildForgeServer}/fullcontrol/index.php?mod=jobs&#038;action=build.view&#038;bf_id=${buildForgeBuildId}"/>
+		</exec>
+		
+		<!-- add back-link for RTC Build Result -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.web"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="RTC Build Result"/>
+			<arg value="-link"/>
+			<arg value="${repositoryAddress}/web/projects/JKE%20-%20Money%20that%20Matters%20(Change%20Management)#action=com.ibm.team.build.viewResult&#038;id=${buildResultUUID}"/>
+		</exec>
+		
+		<!-- Publish Link to built uDeploy Component Version on RTC Build Result -->
+		<linkPublisher 
+		 	label="IBM UC Deploy Component (jke.web)" 
+		 	url="${udclient.weburl}/#version/${jke.web.component.id}" 
+		 	buildResultUUID="${buildResultUUID}" 
+		 	repositoryAddress="${repositoryAddress}" 
+		 	userId="${userId}" 
+		 	password="${password}" 
+		 	failOnError="false" />
+		
+		<startBuildActivity
+			activityIdProperty="push.jke.test"
+			parentActivityID="${push.activity}"
+			label="Pushing jke.test artifacts with new version ${buildTimestamp}..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+			
+		<!-- create new version for jke.test component -->
+		<exec executable="/bin/bash" outputproperty="jke.test.component.output">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="createVersion"/>
+			<arg value="-component"/>
+			<arg value="jke.test"/>
+			<arg value="-name"/>
+			<arg value="${buildTimestamp}"/>
+		</exec>
+		
+		<!-- This uses Rhino - an Open Source implementation of JavaScript written in Java - to parse JSON. -->
+		<script language="javascript">
+			<![CDATA[
+			
+		    json = project.getProperty("jke.test.component.output");
+			
+			echo = project.createTask("echo");
+			echo.setMessage("Parsing Response:");
+			echo.perform();
+			echo = project.createTask("echo");
+			echo.setMessage(json);
+			echo.perform();
+
+		    // Parse JSON response
+		    obj = JSON.parse(json);
+
+	        // retrieve the new component version id
+			id = obj.id;
+			echo = project.createTask("echo");
+			echo.setMessage("jke.test.component.id=" + id);
+			echo.perform();
+			
+			// set project property to be used later for request status lookups
+			project.setProperty("jke.test.component.id", id);
+
+			]]>
+		</script>
+		
+		<!-- add files to new version of jke.db component -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionFiles"/>
+			<arg value="-component"/>
+			<arg value="jke.test"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-base"/>
+			<arg value="${destdir.gh-test}"/>
+		</exec>
+		
+		<!-- add back-link for Build Forge Job -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.test"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="Build Forge Job"/>
+			<arg value="-link"/>
+			<arg value="http://${buildForgeServer}/fullcontrol/index.php?mod=jobs&#038;action=build.view&#038;bf_id=${buildForgeBuildId}"/>
+		</exec>
+		
+		<!-- add back-link for RTC Build Result -->
+		<exec executable="/bin/bash">
+			<arg value="/opt/udclient/udclient"/>
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="addVersionLink"/>
+			<arg value="-component"/>
+			<arg value="jke.test"/>
+			<arg value="-version"/>
+			<arg value="${buildTimestamp}"/>
+			<arg value="-linkName"/>
+			<arg value="RTC Build Result"/>
+			<arg value="-link"/>
+			<arg value="${repositoryAddress}/web/projects/JKE%20-%20Money%20that%20Matters%20(Change%20Management)#action=com.ibm.team.build.viewResult&#038;id=${buildResultUUID}"/>
+		</exec>
+		
+		<!-- Publish Link to built uDeploy Component Version on RTC Build Result -->
+		<linkPublisher 
+		 	label="IBM UC Deploy Component (jke.test)" 
+		 	url="${udclient.weburl}/#version/${jke.test.component.id}" 
+		 	buildResultUUID="${buildResultUUID}" 
+		 	repositoryAddress="${repositoryAddress}" 
+		 	userId="${userId}" 
+		 	password="${password}" 
+		 	failOnError="false" />
+		
+		<completeBuildActivity activityId="${push.activity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+	</target>
+	
+	<target name="deploy" depends="push">
+		
+		<startBuildActivity
+			activityIdProperty="deploy.activity"
+			label="Deploy application"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+				
+		<!-- replace @jke.version@ in udeploy.json file with real version -->
+		<filter token="jke.version" value="${buildTimestamp}"/>
+		<filter token="buildResultUUID" value="${buildResultUUID}"/>
+		<copy todir="${destdir}" filtering="true">
+			<fileset dir=".">
+				<include name="udeploy.json"/>
+			</fileset>
+		</copy>	
+		
+		<exec executable="/opt/udclient/udclient" osfamily="unix" vmlauncher="false" outputproperty="deploy.request.output">
+			<arg value="-weburl"/>
+			<arg value="${udclient.weburl}"/>
+			<arg value="-username"/>
+			<arg value="${udclient.username}"/>
+			<arg value="-password"/>
+			<arg value="${udclient.password}"/>
+			<arg value="${udclient.verbose}"/>
+			
+			<arg value="requestApplicationProcess"/>
+			<arg value="${destdir}/udeploy.json"/>
+		</exec>
+		
+		<!-- This uses Rhino - an Open Source implementation of JavaScript written in Java - to parse JSON. -->
+		<script language="javascript">
+			<![CDATA[
+			
+		    json = project.getProperty("deploy.request.output");
+			
+			echo = project.createTask("echo");
+			echo.setMessage("Parsing Response:");
+			echo.perform();
+			echo = project.createTask("echo");
+			echo.setMessage(json);
+			echo.perform();
+
+		    // Parse JSON response
+		    obj = JSON.parse(json);
+
+	        // retrieve the requestId
+			requestId = obj.requestId;
+			echo = project.createTask("echo");
+			echo.setMessage("deploy.request.id=" + requestId);
+			echo.perform();
+			
+			// set project property to be used later for request status lookups
+			project.setProperty("deploy.request.id", requestId);
+
+			]]>
+		</script>
+		
+		<waitfor maxwait="5" maxwaitunit="minute" checkevery="30" checkeveryunit="second">
+			<scriptcondition language="javascript">
+				<![CDATA[
+				
+				importClass(java.lang.System);
+				importClass(java.lang.StringBuilder);
+			    importClass(java.io.File);
+			    importClass(java.io.FileReader);
+			    importClass(java.io.BufferedReader);
+			    importClass(java.io.FileWriter);
+			    importClass(java.io.BufferedWriter);
+				
+				// execute udclient command to check on request progress. response will be written to 
+				// file "status.output" b/c we cannot overwrite a property once it's been set in Ant
+				outputFile = new File("status.output");
+				exec = project.createTask("exec");
+				exec.setExecutable("bash");
+				exec.setOsFamily("unix");
+				exec.setVMLauncher(false);
+				exec.setOutput(outputFile);
+				exec.createArg().setValue("/opt/udclient/udclient");
+				exec.createArg().setValue("-weburl");
+				exec.createArg().setValue(project.getProperty("udclient.weburl"));
+				exec.createArg().setValue("-username");
+				exec.createArg().setValue(project.getProperty("udclient.username"));
+				exec.createArg().setValue("-password");
+				exec.createArg().setValue(project.getProperty("udclient.password"));
+				exec.createArg().setValue(project.getProperty("udclient.verbose"));
+				exec.createArg().setValue("getApplicationProcessRequestStatus");
+				exec.createArg().setValue("-request");
+				exec.createArg().setValue(project.getProperty("deploy.request.id"));
+				exec.execute();
+				
+				// read output of above udclient command from file "status.output"
+				f = new File("status.output");
+				fr = new FileReader(f);
+			    reader = new BufferedReader(fr);
+				
+			    line = null;
+			    stringBuilder = new StringBuilder();
+			    ls = System.getProperty("line.separator");
+
+			    while( ( line = reader.readLine() ) != null ) {
+			        stringBuilder.append( line );
+			        stringBuilder.append( ls );
+			    }
+
+			    json = stringBuilder.toString();
+				
+				echo = project.createTask("echo");
+				echo.setMessage("status.output:");
+				echo.perform();
+				
+				echo = project.createTask("echo");
+				echo.setMessage(json);
+				echo.perform();
+
+			    // Parse JSON response
+				obj = JSON.parse(json);
+
+		        // retrieve the request status and result
+				status = obj.status;
+				result = obj.result;
+				
+				echo = project.createTask("echo");
+				echo.setMessage("deploy.request.status=" + status);
+				echo.perform();
+				echo = project.createTask("echo");
+				echo.setMessage("deploy.request.result=" + result);
+				echo.perform();
+				
+				if( "CLOSED".equalsIgnoreCase(status.trim()) ) {
+					// set project property to be used to check completion of request by other downstream targets
+					project.setProperty("deploy.request.status", status);
+					project.setProperty("deploy.request.result", result);
+					self.setValue(true);
+				}
+				]]>
+			</scriptcondition>
+		</waitfor>
+		
+		<completeBuildActivity activityId="${deploy.activity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+	</target>
+	
+	<target name="validate" depends="unit-tests"/>
+	
+	<target name="unit-tests">
+		
+		<startBuildActivity
+			activityIdProperty="unit-tests.activity"
+			label="Execute unit tests"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="run.unit.tests"
+			parentActivityID="${unit-tests.activity}"
+			label="Determining status of previously executed unit-tests..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<!-- Update Unit Tests Passed Status on Components -->
+		<if>
+			<equals arg1="${unitTestsFailed}" arg2="false"/>
+			<then>
+				<echo level="info">Unit tests passed</echo>
+				<!-- set status on jke.web & jke.db versions created by this build -->
+				<exec executable="/bin/bash">
+					<arg value="/opt/udclient/udclient"/>
+					<arg value="-weburl"/>
+					<arg value="${udclient.weburl}"/>
+					<arg value="-username"/>
+					<arg value="${udclient.username}"/>
+					<arg value="-password"/>
+					<arg value="${udclient.password}"/>
+					<arg value="${udclient.verbose}"/>
+					
+					<arg value="addVersionStatus"/>
+					<arg value="-component"/>
+					<arg value="jke.db"/>
+					<arg value="-version"/>
+					<arg value="${buildTimestamp}"/>
+					<arg value="-status"/>
+					<arg value="Unit Tests Passed"/>
+				</exec>
+				
+				<exec executable="/bin/bash">
+					<arg value="/opt/udclient/udclient"/>
+					<arg value="-weburl"/>
+					<arg value="${udclient.weburl}"/>
+					<arg value="-username"/>
+					<arg value="${udclient.username}"/>
+					<arg value="-password"/>
+					<arg value="${udclient.password}"/>
+					<arg value="${udclient.verbose}"/>
+					
+					<arg value="addVersionStatus"/>
+					<arg value="-component"/>
+					<arg value="jke.web"/>
+					<arg value="-version"/>
+					<arg value="${buildTimestamp}"/>
+					<arg value="-status"/>
+					<arg value="Unit Tests Passed"/>
+				</exec>
+				
+				<exec executable="/bin/bash">
+					<arg value="/opt/udclient/udclient"/>
+					<arg value="-weburl"/>
+					<arg value="${udclient.weburl}"/>
+					<arg value="-username"/>
+					<arg value="${udclient.username}"/>
+					<arg value="-password"/>
+					<arg value="${udclient.password}"/>
+					<arg value="${udclient.verbose}"/>
+					
+					<arg value="addVersionStatus"/>
+					<arg value="-component"/>
+					<arg value="jke.test"/>
+					<arg value="-version"/>
+					<arg value="${buildTimestamp}"/>
+					<arg value="-status"/>
+					<arg value="Unit Tests Passed"/>
+				</exec>
+			</then>
+			<else>
+				<echo level="info">Unit test failures were detected</echo>
+			</else>
+		</if>
+		
+		<completeBuildActivity activityId="${unit-tests.activity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+	</target>
+	
+	<target name="greenhat">
+		
+		<startBuildActivity
+			activityIdProperty="validate.services.activity"
+			label="Validate the JKE deployment utilizing GreenHat virtual services"
+			autoComplete="false"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startBuildActivity
+			activityIdProperty="start.greenhat.stubs"
+			parentActivityID="${validate.services.activity}"
+			label="Starting GoogleStockQuoteServiceStub in the DEV domain on Rational Test Control Panel server..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<startStub domain="JKE" environment="DEV" stub="GoogleStockQuoteServiceStub" serverURL="http://fit-vm13-76.rtp.raleigh.ibm.com:7819/RTCP" />
+		
+		<startBuildActivity
+			activityIdProperty="run.rit.tests"
+			parentActivityID="${validate.services.activity}"
+			label="Running Rational Integration Tester (GreenHat) tests against deployed application..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<!-- Clean RIT results directory -->
+		<delete dir="/tmp/RITJKEVirtualizationTests/Results"/>
+		<mkdir dir="/tmp/RITJKEVirtualizationTests/Results"/>
+		
+		<!-- Run the rit test suite -->
+		<property name="install.dir" value="/opt/IBM/RationalIntegrationTester"/>
+		<GHTester environment="DEV" haltOnFailure="false" failureProperty="ritTestsFailed" resultsServerLogging="absolute" 
+			project="/opt/JKERITVirtualizationTests/JKERITVirtualizationTests.ghp">
+			<Tests>
+				<filelist dir="/opt/JKERITVirtualizationTests">
+					<file name="RITJKEVirtualizationTests"/>
+				</filelist>
+			</Tests>
+		</GHTester>
+		
+		<!-- Log the result and set the Functional Verification Tests Passed status -->
+		<if>
+			<equals arg1="${ritTestsFailed}" arg2="false"/>
+			<then>
+				<echo level="info">Successfully ran the GreenHat virtual service tests</echo>
+				<!-- set status on jke.web & jke.db versions created by this build -->
+				<exec executable="/bin/bash">
+					<arg value="/opt/udclient/udclient"/>
+					<arg value="-weburl"/>
+					<arg value="${udclient.weburl}"/>
+					<arg value="-username"/>
+					<arg value="${udclient.username}"/>
+					<arg value="-password"/>
+					<arg value="${udclient.password}"/>
+					<arg value="${udclient.verbose}"/>
+					
+					<arg value="addVersionStatus"/>
+					<arg value="-component"/>
+					<arg value="jke.db"/>
+					<arg value="-version"/>
+					<arg value="${buildTimestamp}"/>
+					<arg value="-status"/>
+					<arg value="GreenHat Tests Passed"/>
+				</exec>
+				
+				<exec executable="/bin/bash">
+					<arg value="/opt/udclient/udclient"/>
+					<arg value="-weburl"/>
+					<arg value="${udclient.weburl}"/>
+					<arg value="-username"/>
+					<arg value="${udclient.username}"/>
+					<arg value="-password"/>
+					<arg value="${udclient.password}"/>
+					<arg value="${udclient.verbose}"/>
+					
+					<arg value="addVersionStatus"/>
+					<arg value="-component"/>
+					<arg value="jke.web"/>
+					<arg value="-version"/>
+					<arg value="${buildTimestamp}"/>
+					<arg value="-status"/>
+					<arg value="GreenHat Tests Passed"/>
+				</exec>
+			</then>
+			<else>
+				<echo level="info">GreenHat virtual service tests failed.</echo>
+			</else>
+		</if>
+		
+		<!-- Publish results to RTC -->
+		<!-- Determine the file name by looking for a file with the pattern TEST-*.xml -->
+		<fileset id="rit_test_result_fs" dir="/tmp/RITJKEVirtualizationTests/Results" includes="*.xml"/>
+		<property name="rit_test_result_file" value="${toString:rit_test_result_fs}"/>
+		<junitLogPublisher
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}"
+			buildResultUUID="${buildResultUUID}"
+			filePath="/tmp/RITJKEVirtualizationTests/Results/${rit_test_result_file}"/>
+		
+		<startBuildActivity
+			activityIdProperty="stop.greenhat.stubs"
+			parentActivityID="${validate.services.activity}"
+			label="Stopping GoogleStockQuoteServiceStub in the DEV domain on Rational Test Control Panel server..."
+			autoComplete="true"	
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+		<stopStub domain="JKE" environment="DEV" stub="GoogleStockQuoteServiceStub" serverURL="http://fit-vm13-76.rtp.raleigh.ibm.com:7819/RTCP" />
+		
+		<completeBuildActivity activityId="${validate.services.activity}"
+			buildResultUUID="${buildResultUUID}"
+			repositoryAddress="${repositoryAddress}"
+			userId="${userId}"
+			password="${password}" />
+		
+	</target>
+	
+
+	<!-- Initialize Ant-Contrib tasks.  Use -lib /path/to/ant-contrib-1.0b3.jar -->
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+	
+	<!-- Initialize GreenHat RTCP Ant tasks. Use -lib /path/to/greenhat-ant-tasks -->
+	<taskdef name="startStub" classname="com.ghc.ghTester.ant.StartStub" />
+	<taskdef name="stopStub" classname="com.ghc.ghTester.ant.StopStub" />
+	<taskdef name="GHTester" classname="com.ghc.ghTester.ant.GHTester"/>
+	
+	<!-- These task definitions make the Jazz ant tasks available to this build file.
+	     In order to find these classnames at run time, ant must be invoked with:
+
+		     -lib <buildsystem-location>/buildtoolkit
+	 -->
+	<taskdef name="artifactPublisher"
+	         classname="com.ibm.team.build.ant.task.ArtifactFilePublisherTask" />
+
+	<taskdef name="artifactLinkPublisher"
+	         classname="com.ibm.team.build.ant.task.ArtifactLinkPublisherTask" />
+
+	<taskdef name="buildResultPublisher"
+	         classname="com.ibm.team.build.ant.task.BuildResultPublisherTask" />
+
+	<taskdef name="filePublisher"
+	         classname="com.ibm.team.build.ant.task.FilePublisherTask" />
+
+	<taskdef name="jdtCompileLogPublisher"
+	         classname="com.ibm.team.build.ant.task.JdtCompileLogPublisherTask" />
+
+	<taskdef name="junitLogPublisher"
+	         classname="com.ibm.team.build.ant.task.JUnitLogPublisherTask" />
+
+	<taskdef name="junitResultPublisher"
+		        classname="com.ibm.team.build.ant.task.JUnitLogPublisherTask"/>	
+	
+	<taskdef name="linkPublisher"
+	         classname="com.ibm.team.build.ant.task.LinkPublisherTask" />
+
+	<taskdef name="logPublisher"
+	         classname="com.ibm.team.build.ant.task.LogPublisherTask" />
+
+	<taskdef name="teamAccept"
+	         classname="com.ibm.team.build.ant.task.TeamAcceptTask"/>
+
+	<taskdef name="teamFetch"
+	         classname="com.ibm.team.build.ant.task.TeamFetchTask"/>
+
+	<taskdef name="workItemPublisher"
+	         classname="com.ibm.team.build.ant.task.WorkItemPublisherTask"/>
+
+   	<taskdef name="startBuildActivity"
+  	         classname="com.ibm.team.build.ant.task.StartBuildActivityTask" />
+
+   	<taskdef name="completeBuildActivity"
+   	         classname="com.ibm.team.build.ant.task.CompleteBuildActivityTask" />
+
+</project>	

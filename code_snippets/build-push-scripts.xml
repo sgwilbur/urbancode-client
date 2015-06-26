@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<project name="IBM UrbanCode Deploy" default="all" basedir=".">
+
+	<!--
+    <property file="build.properties" />
+	-->
+    <property name="component.target" value="1.6" />
+    <property name="javac.encoding" value="UTF-8" />
+    <property name="verbose" value="true" />
+	
+	
+	<property name="buildLabel" value="" />
+	
+	<property name="ucd.server.url" value="" />
+	<property name="ucd.userid" value="" />
+	<property name="ucd.password" value="" />
+	
+	<property name="ucd.applicationName" value="" />
+	<property name="ucd.componentName" value="" />
+	<property name="ucd.componentBase" value="" />
+
+    <condition property="isWindows"><os family="windows" /></condition>
+    <condition property="isUnix"><os family="unix" /></condition>
+
+    <target name="all" depends="createComponentVersion">
+        <echo message="Running createComponentVersion target" />
+        <echo message="os.name = ${os.name}" />
+        <echo message="os.arch = ${os.arch}" />
+        <echo message="os.version = ${os.version}" />
+	</target>
+	
+	<property name="out.ucd.CreateComponentVersion" value="ccv.log" />
+	<property name="out.ucd.LoadComponentVersion" value="lcv.log" />
+	
+	
+	<target name="createComponentVersion" description="Creates new Component versions in UrbanCode Deploy CodeStation." depends="createComponentVersion_windows,createComponentVersion_unix">
+
+		<echo>output logged to: ${out.ucd.CreateComponentVersion}</echo>
+		<echo>output logged to: ${out.ucd.LoadComponentVersion}</echo>
+	
+	</target>
+	
+	<target name="createComponentVersion_windows" if="isWindows">
+		<echo> Executing createComponentVersion Windows</echo>
+		<exec executable="cmd.exe">
+			<arg value="/c udclient login -username ${ucd.userid} -password ${ucd.password} -weburl ${ucd.server.url}" /> 
+		</exec>
+		<exec executable="cmd.exe" output="${out.ucd.CreateComponentVersion}">
+			<arg value="/c udclient -username ${ucd.userid} -password ${ucd.password} 
+				-weburl ${ucd.server.url} createVersion -component ${ucd.componentName} -name ${buildLabel}" /> 
+		</exec>
+		<exec executable="cmd.exe" output="${out.ucd.LoadComponentVersion}">
+			<arg value="/c udclient -username ${ucd.userid} -password ${ucd.password} 
+				-weburl ${ucd.server.url} addVersionFiles -component ${ucd.componentName} -version ${buildLabel} 
+				-base ${ucd.componentBase} -file *.jython" /> 
+		</exec>
+		<exec executable="cmd.exe">
+			<arg value="/c udclient logout -weburl ${ucd.server.url}" /> 
+		</exec>
+	</target>
+	
+	<target name="createComponentVersion_unix" if="isUnix" >
+		<echo> Executing createComponentVersion Unix</echo>
+		<exec executable="udclient login -username ${ucd.userid} -password ${ucd.password} -weburl ${ucd.server.url}" 
+			vmlauncher="false"/>
+		<exec executable="udclient -username ${ucd.userid} -password ${ucd.password} -weburl ${ucd.server.url} 
+			createVersion -component ${ucd.componentName} -name ${buildLabel}" 
+			vmlauncher="false" 
+			output="${out.ucd.CreateComponentVersion}" />
+		<exec executable="udclient -username ${ucd.userid} -password ${ucd.password} -weburl ${ucd.server.url} 
+			addVersionFiles -component ${ucd.componentName} -version ${buildLabel} 
+			-base ${ucd.componentBase} -file *.jython" 
+			vmlauncher="false" 
+			output="${out.ucd.LoadComponentVersion}" />
+		<exec executable="udclient logout -weburl ${ucd.server.url}" vmlauncher="false"/>
+	</target>
+
+	<target name="deploy" description="initiates deploy process on UCD server">
+		<exec executable="cmd.exe">
+			<arg value="/c udclient login -username ${ucd.userid} -password ${ucd.password} -weburl ${ucd.server.url}" /> 
+		</exec>
+		<echo file="${ucd-deployment-input-file}" append="false">{
+		                       "application": ${ucd-application-name},
+		                       "applicationProcess": ${ucd-application-process},
+		                       "environment": ${ucd-environment-name},
+		                       "versions": [
+		                         {
+		                           "version": ${buildLabel},
+		                           "component": ${ucd-component_1_name},
+		                         }
+		                       ],
+		                     }    
+		</echo>
+		<exec executable="cmd.exe" output="${ucd-deployment-log-file}">
+			<arg value="/c udclient -username ${ucd.userid} -password ${ucd.password} 
+				-weburl ${ucd.server.url} requestApplicationProcess ${ucd-deployment-input-file}" /> 
+		</exec>
+		<exec executable="cmd.exe">
+			<arg value="/c udclient logout -weburl ${ucd.server.url}" /> 
+		</exec>
+	</target>
+
+</project>

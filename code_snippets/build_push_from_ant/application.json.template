@@ -1,0 +1,30 @@
+{
+	"application" = "JKE",
+	"applicationProcess" = "deploy",
+	"environment" = "DEV",
+	"onlyChanged" = "false",
+	"properties": {
+		"RTCBuildResultUUID": "@buildResultUUID@",
+		"RTCUserId": "@userId@",
+		"RTCPassword": "@password@",
+		"RTCRepositoryAddress": "@repositoryAddress@"
+	},
+	"versions" : [
+		{
+			"component" = "jke.db",
+			"version" = "@jke.version@"
+		},
+		{
+			"component" = "jke.war",
+			"version" = "@jke.version@"
+		},
+		{
+			"component" = "jke.test",
+			"version" = "@jke.version@"
+		},
+		{
+			"component" = "jke.liberty",
+			"version" = "@jke.version@"
+		}
+	]
+}
