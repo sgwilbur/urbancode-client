@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import requests
 # quiet warnings for self-signed certificates
 requests.packages.urllib3.disable_warnings()
@@ -11,15 +10,11 @@ class ucclient():
   '''
    Setup a new UrbanCode client
   '''
-  def __init__(self, base_url, user, password ):
-    self._DEBUG = False
-
-    self.session_key_header = 'UCD_SESSION_KEY'
-
+  def __init__(self, base_url, user, password , debug=False):
+    self._DEBUG = debug
     self.base_url = base_url
     self.auth_user = user
     self.auth_password = password
-
     self.session = requests.Session()
 
     # Login
@@ -27,12 +22,18 @@ class ucclient():
     self.session.verify = False
     response = self.session.get( self.base_url + '/security/user' )
 
-    my_cookie =  response.headers['set-cookie']
+    if response.status_code != requests.codes.ok:
+     self.debug_reponse( response )
+     raise Exception( 'Failed to login to UrbanCode' )
 
-    if self.session_key_header in my_cookie:
-       re_match = re.search('%s=(.{36});' % ( self.session_key_header ), my_cookie )
-       if re_match:
-         self.session.headers.update({self.session_key_header: re_match.group(1) })
+    cookies =  response.headers['set-cookie']
+
+    # Figure out which client this is expecting a cookie named UC[BDR]_SESSION_KEY
+    re_match = re.search('(UC[BDR]_SESSION_KEY)=(.{36});', cookies )
+    if re_match:
+      if self._DEBUG:
+        print( " %s : %s " % ( re_match.group(1), re_match.group(2) ) )
+      self.session.headers.update({re_match.group(1): re_match.group(2) })
 
   '''
     Get wrapper with the session

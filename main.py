@@ -16,7 +16,7 @@ def __main__():
   base_url = 'https://192.168.1.117'
 
   applications_uri = '/rest/deploy/application'
-  ucd = ucclient( base_url, user, password )
+  ucd = ucclient( base_url, user, password , 0)
 
   # get the existing applications
   response = ucd.get( uri=applications_uri )
@@ -33,7 +33,7 @@ def __main__():
   body = json.dumps( new_app )
   r = ucd.put(uri=applications_uri, data=body )
   print( "Create new application response: %s " % ( r.text ) )
-  ucd.debug_reponse( r )
+  #ucd.debug_reponse( r )
 
   '''
    Get Application Properties
@@ -46,7 +46,7 @@ def __main__():
   r = ucd.get( uri=property_get_uri )
   # 200 ok created
   # 400 if app already exists
-  ucd.debug_reponse( r )
+  #ucd.debug_reponse( r )
 
   '''
    Set a property
@@ -62,7 +62,7 @@ def __main__():
   r = ucd.put( uri=property_set_uri )
   # 200 ok on create
   # 200 on update if already exists
-  ucd.debug_reponse( r )
+  #ucd.debug_reponse( r )
 
   '''
    Get a specific property value
@@ -73,7 +73,7 @@ http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.d
   print "Get property %s value on application %s " % ( prop_name, app_name )
   property_get_uri = '/cli/application/getProperty?application=%s&name=%s' % ( app_name, prop_name )
   r = ucd.get( uri=property_get_uri )
-  ucd.debug_reponse( r )
+  #ucd.debug_reponse( r )
 
 
 __main__()
