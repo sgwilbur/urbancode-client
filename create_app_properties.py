@@ -13,14 +13,20 @@ def __main__():
   # hard coded
   user = 'admin'
   password = 'admin'
-  base_url = 'https://192.168.1.117'
+  base_url = 'https://172.16.62.138'
 
-  applications_uri = '/rest/deploy/application'
+  applications_uri = '/cli/deploy/application'
   ucd = ucclient( base_url, user, password , 0)
 
+  team_name = 'Team1'
+  new_team_uri = '/cli/team/create?team=%s&description=%s' % ( team_name, 'description')
+
+  r = ucd.put( uri=new_team_uri )
+  print( "Create new team response: %s" % ( r.text ) )
+
   # get the existing applications
-  response = ucd.get( uri=applications_uri )
-  print( "Get existing applications: %s" % ( response.json() ) )
+  #response = ucd.get( uri=applications_uri )
+#  print( "Get existing applications: %s" % ( response.json() ) )
 
   '''
    Create a new Application
