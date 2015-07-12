@@ -4,7 +4,10 @@ requests.packages.urllib3.disable_warnings()
 
 import json
 import re
-
+'''
+ UrbanCode Client is the super class to provide the session management and
+ wrappers around the high level operations that are shared between all clients.
+'''
 class ucclient():
 
   '''
@@ -44,13 +47,25 @@ class ucclient():
   '''
     Put wrapper
   '''
-  def put( self, uri, data={}):
+  def put( self, uri, data={} ):
     return self.session.put( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
 
   '''
-   Helper for debugging the response objects
+    Post wrapper
   '''
-  def debug_reponse( self, response ):
+  def post( self, uri, data={} ):
+    return self.session.post( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
+
+  '''
+    Delete wrapper
+  '''
+  def delete( self, uri ):
+    return self.session.delete( self.base_url + uri, headers={ 'accept':'application/json', 'content-type': 'application/json'} )
+
+  '''
+   Helper for debugging the response object returned
+  '''
+  def debug_response( self, response ):
     print( "         response.url: %s " % ( response.url ) )
     print( "    response.encoding: %s " % ( response.encoding ) )
     print( " response.status_code: %s " % ( response.status_code ) )

@@ -1,12 +1,8 @@
 #!/usr/bin/env python
-#import requests
-# quiet warnings for self-signed certificates
-#requests.packages.urllib3.disable_warnings()
 
 import json
 import re
 from ucclient import ucclient
-
 
 def __main__():
 
@@ -21,7 +17,6 @@ def __main__():
   '''
    Create a new Application
    http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.doc/topics/rest_cli_application.html?lang=en
-
   '''
   app_name = 'Application'
   applications_uri = '/cli/application/create'
@@ -30,7 +25,7 @@ def __main__():
   body = json.dumps( new_app )
   r = ucd.put(uri=applications_uri, data=body )
   print( "Create new application response: %s %s " % ( r.status_code, r.text ) )
-  #ucd.debug_reponse( r )
+  #ucd.debug_response( r )
 
 
   team_name = 'Team1'
@@ -41,7 +36,6 @@ def __main__():
 
   '''
    Add Group to team
-
    /cli/teamsecurity/groups?group=<name>&team=<name>&type=<name of type>
    http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.doc/topics/rest_cli_teamsecurity_groups_put.html
   '''
@@ -49,16 +43,12 @@ def __main__():
   role_name = 'ConfigEngineer'
 
   add_group_to_team_uri = '/cli/teamsecurity/groups?group=%s&team=%s&type=%s' % ( group_name, team_name, role_name )
-
-
   r = ucd.put( uri=add_group_to_team_uri )
 
 
   '''
-
   PUT https://{hostname}:{port}
   /cli/application/teams?{parameters}
-
   '''
 
   type_name = 'Standard Application'
@@ -67,10 +57,8 @@ def __main__():
   r = ucd.put( uri=add_team_to_app )
   print( "Add Team to Application response: %s %s" % ( r.status_code, r.text ) )
 
-
   '''
   Add a team to an Environment
-
 
   PUT https://{hostname}:{port}
   /cli/environment/teams?{parameters}

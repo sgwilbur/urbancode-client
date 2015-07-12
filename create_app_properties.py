@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-#import requests
-# quiet warnings for self-signed certificates
-#requests.packages.urllib3.disable_warnings()
+'''
 
+ Simple example of how to create applications and get/set properties on them.
+
+'''
 import json
 import re
 from ucclient import ucclient
@@ -16,7 +17,7 @@ def __main__():
   base_url = 'https://172.16.62.138'
 
   applications_uri = '/cli/deploy/application'
-  ucd = ucclient( base_url, user, password , 0)
+  ucd = ucclient( base_url, user, password , debug=0)
 
   team_name = 'Team1'
   new_team_uri = '/cli/team/create?team=%s&description=%s' % ( team_name, 'description')
@@ -26,7 +27,7 @@ def __main__():
 
   # get the existing applications
   #response = ucd.get( uri=applications_uri )
-#  print( "Get existing applications: %s" % ( response.json() ) )
+  # print( "Get existing applications: %s" % ( response.json() ) )
 
   '''
    Create a new Application
@@ -39,7 +40,7 @@ def __main__():
   body = json.dumps( new_app )
   r = ucd.put(uri=applications_uri, data=body )
   print( "Create new application response: %s " % ( r.text ) )
-  #ucd.debug_reponse( r )
+  #ucd.debug_response( r )
 
   '''
    Get Application Properties
@@ -68,7 +69,7 @@ def __main__():
   r = ucd.put( uri=property_set_uri )
   # 200 ok on create
   # 200 on update if already exists
-  #ucd.debug_reponse( r )
+  ucd.debug_response( r )
 
   '''
    Get a specific property value
@@ -79,7 +80,6 @@ http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.d
   print "Get property %s value on application %s " % ( prop_name, app_name )
   property_get_uri = '/cli/application/getProperty?application=%s&name=%s' % ( app_name, prop_name )
   r = ucd.get( uri=property_get_uri )
-  #ucd.debug_reponse( r )
-
+  #ucd.debug_response( r )
 
 __main__()
