@@ -6,6 +6,8 @@ import json
 class ucdclient( ucclient ):
 
   authz_realm_uri = '/security/authorizationRealm'
+  team_uri = '/security/team'
+
 
 #  def __init__(self, base_url, user, password, debug=False ):
 #    self._DEBUG = debug
@@ -36,3 +38,4 @@ class ucdclient( ucclient ):
     else:
       self.debug_response( r )
       raise Exception( 'Failed to create new AuthorizationRealm')
+    

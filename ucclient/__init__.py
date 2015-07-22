@@ -23,14 +23,15 @@ class ucclient():
     # Login
     self.session.auth = ( self.auth_user, self.auth_password )
     self.session.verify = False
-    response = self.session.get( self.base_url + '/security/user' )
+    self.challenge_uri = '/'
 
-    if response.status_code != requests.codes.ok:
-     self.debug_reponse( response )
+    response = self.session.get( self.base_url + self.challenge_uri )
+
+    if 'set-cookie' not in response.headers and response.status_code != requests.codes.ok:
+     self.debug_response( response )
      raise Exception( 'Failed to login to UrbanCode' )
 
     cookies =  response.headers['set-cookie']
-
     # Figure out which client this is expecting a cookie named UC[BDR]_SESSION_KEY
     re_match = re.search('(UC[BDR]_SESSION_KEY)=(.{36});', cookies )
     if re_match:
