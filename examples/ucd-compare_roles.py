@@ -34,7 +34,6 @@ import json
 import re
 import urllib
 from pprint import pprint
-from datadiff import diff
 
 import sys
 import getopt
