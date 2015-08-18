@@ -5,4 +5,7 @@
 
 ### Setup
 
-The only requirement for these helpers in to install the *requests* library.
+The requirements for these helpers are identified in the requirements.txt file:
+
+    pip install -r requirements.txt
+
