@@ -6,6 +6,8 @@
 '''
 import json
 import re
+import sys
+sys.path.append('..')
 from ucclient import ucclient
 
 
@@ -14,7 +16,7 @@ def __main__():
   # hard coded
   user = 'admin'
   password = 'admin'
-  base_url = 'https://172.16.62.138'
+  base_url = 'https://192.168.1.117'
 
   applications_uri = '/cli/deploy/application'
   ucd = ucclient( base_url, user, password , debug=0)

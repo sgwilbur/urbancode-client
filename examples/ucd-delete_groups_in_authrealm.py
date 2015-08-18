@@ -2,6 +2,8 @@
 
 import json
 import re
+import sys
+sys.path.append('..')
 from ucclient import ucclient
 
 def __main__():
@@ -9,7 +11,7 @@ def __main__():
   # hard coded
   user = 'admin'
   password = 'admin'
-  base_url = 'https://172.16.62.138'
+  base_url = 'https://192.168.1.117'
 
   uri_security_group = '/security/group'
   delete_from_auth_realm_name = 'TestAuthRealm'
