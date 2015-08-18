@@ -29,9 +29,6 @@ user = 'PasswordIsAuthToken'
 password = ''
 base_url = ''
 
-#password = '51d0e176-3fec-4e58-ab41-62df4e13eab8'
-#base_url = 'https://192.168.1.117'
-
 '''
  Print Team
 '''
