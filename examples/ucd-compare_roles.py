@@ -5,6 +5,30 @@
   Focusing on read-only scenarios.
 
   Check the usage statement below or run ./ucd-compare_roles.py --help
+
+Example use:
+
+./ucd-compare_roles.py -s https://192.168.1.117 -p XXX Developer "Team Lead"
+Defined Roles: Administrator, Developer, Local Team Admin, Observer, Production Administrators, Stakeholder, Standard Viewer, Team Lead
+Comparing Developer and Team Lead
+Only in Developer (3)
+        Action: Execute processes on environments.
+        Action: View applications in this team.
+        Action: Edit basic settings for components.
+Only n Team Lead (12)
+        Action: Manage teams for agent pools.
+        Action: Manage which agents import component versions.
+        Action: Create new agent pools for this team.
+        Action: View the processes tab.
+        Action: Add or remove agents from the agent pool.
+        Action: Edit basic settings for agent pools.
+        Action: Delete agent pools.
+        Action: Create resources that are children of agent pools.
+        Action: Add new members to this team.
+        Action: Add agents to agent pools.
+        Action: Create resources that are children of agents.
+        Action: Manage impersonation settings for agents.
+
 '''
 import json
 import re
