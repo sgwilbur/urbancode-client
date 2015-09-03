@@ -40,10 +40,17 @@ class ucclient():
       self.session.headers.update({re_match.group(1): re_match.group(2) })
 
   '''
-    Get wrapper with the session
+    Get wrappers with the session
   '''
   def get( self, uri ):
     return self.session.get( self.base_url + uri, headers={'accept': 'application/json'} )
+
+  def get_json( self, uri ):
+      r = self.get( uri )
+      if r.status_code not in [ 200 ]:
+        self.debug_response( r )
+        raise Exception( 'Error calling GET on %s returned HTTP %d' % ( uri, r.status_code ) )
+      return r.json()
 
   '''
     Put wrapper
@@ -52,16 +59,31 @@ class ucclient():
     return self.session.put( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
 
   '''
-    Post wrapper
+    Post wrappers
   '''
   def post( self, uri, data={} ):
     return self.session.post( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
 
+  def post_json( self, uri, data={} ):
+      r = self.post( uri, data )
+      if r.status_code not in [ 201 ]:
+        self.debug_response( r )
+        raise Exception( 'Error calling POST on %s returned HTTP %d' % ( uri, r.status_code ) )
+      return r.json()
+
   '''
     Delete wrapper
   '''
+#  def delete( self, uri ):
+#    return self.session.delete( self.base_url + uri, headers={ 'accept':'application/json', 'content-type': 'application/json'} )
+
   def delete( self, uri ):
-    return self.session.delete( self.base_url + uri, headers={ 'accept':'application/json', 'content-type': 'application/json'} )
+    r = self.session.delete( self.base_url + uri, headers={ 'accept':'application/json', 'content-type': 'application/json'} )
+    if r.status_code not in [200, 204]:
+      self.debug_response( r )
+      raise Exception( 'Error calling DELETE on %s returned HTTP %d ' % ( uri, r.status_code ) )
+    # returning the response object anyway, since some old calls to this method
+    return r
 
   '''
    Helper for debugging the response object returned

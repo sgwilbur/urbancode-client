@@ -54,8 +54,8 @@ def write_csv( events, fname='events.csv' ):
     # probably want to do this local time, not GMT/UTC ?
     c_start = time.gmtime( start )
     c_end = time.gmtime( end )
-    #print( c_start.strftime('%Y-%m-%d %H:%M:%S') )
-    #print( '%s %s-%s ( %s - %s )' % ( event['name'], start, end, c_start, c_end ) )
+    print( time.strftime('%Y-%m-%d %H:%M:%S'), c_start )
+    print( '%s %s-%s ( %s - %s )' % ( event['name'], start, end, c_start, c_end ) )
 
     # put a string format version for people to write?
     event['startDate'] = start
@@ -126,7 +126,7 @@ def __main__():
   # hard coded
   user = 'admin'
   password = 'admin'
-  base_url = 'https://172.16.62.132:8443'
+  base_url = 'https://172.16.62.130:8443'
 
   ucr = ucclient( base_url, user, password , 0 )
 
