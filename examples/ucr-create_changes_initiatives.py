@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 '''
+
+ Helper script to populate Changes and Initiatives into the existing Releases. It
+ is mostly random so you will want to tweak this down or limit Release/application
+ to get more focused data.
+
  Example of
   Check the usage statement below or run ./ucr-example_template.py --help
 
 Example use:
 
-./ucr-example_template.py -s https://192.168.1.117 -u admin -p XXX arg1 arg2 ... argN
+./ucr-create_changes_initiatives.py -s https://192.168.1.117 -u admin -p XXX
 
 '''
 import json
@@ -31,8 +36,6 @@ def usage():
   -s|--server http[s]://server[:port] - Set server url
   -u|--user username
   -p|--password password
-
-  <Insert specific parameters for this example >
 '''
 
 def __main__():
@@ -101,29 +104,27 @@ def __main__():
   #print "Changes(%d): " % ( len(changes) )
   #pprint( changes )
 
-  print "Deleting all the existing Changes"
+  '''
+   Cleanup all the existing Changed and Initiatives
+  '''
+  print "Deleting all the existing Changes (%d)" % ( len(changes) )
   for change in changes:
     #pprint( change )
     ucr.delete_change( change['id'] )
     print '.',
 
-  print "Deleting all the existing Initiatives"
+  print "Deleting all the existing Initiatives (%s)" % ( len( initiatives ) )
   for initiative in initiatives:
     #pprint( initiative )
     ucr.delete_initiative( initiative['id'] )
     print '.',
 
-  # get releases
-  # get applications per release
-  # end result is a list of releases with an array of apps
-
-  # Get a dictionary of words
+  # Get a dictionary of words, Unix specific example
   word_file = "/usr/share/dict/words"
   WORDS = open(word_file).read().splitlines()
 
   for i in range( max_initiatives ):
 
-    word_file = "/usr/share/dict/words"
     initiative = ucr.create_initative( name='project%3d - %s' % (i, random.choice(WORDS) ) )
     num_changes = random.randint( 0, max_changes_per_initiatve )
 
