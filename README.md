@@ -50,15 +50,15 @@ Then actually running the script you pass in the required parameters:
 
 Now you are ready to run the examples, I created a template after creating a handful of these so they conform to a standard pattern to some extent. For example calling a specific example with no parameters should output a usage statement.
 
-   (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients/examples$ ./ucd-compare_roles.py
-   Missing required arguments
-   ucd-compare_roles
-   [-h|--help] - Optional, show usage
-   [-v|--verbose] - Optional, turn on debugging
-   -s|--server http[s]://server[:port] - Set server url
-   [-u|--user username (do not supply when using a token) ]
-   --password [password|token] - Supply password or token to connect with
-   "<Role Name>" "<Role Name>" - 2 Roles to compare, quotes only required when Role Name contains spaces
+    (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients/examples$ ./ucd-compare_roles.py
+    Missing required arguments
+    ucd-compare_roles
+    [-h|--help] - Optional, show usage
+    [-v|--verbose] - Optional, turn on debugging
+    -s|--server http[s]://server[:port] - Set server url
+    [-u|--user username (do not supply when using a token) ]
+    --password [password|token] - Supply password or token to connect with
+    "<Role Name>" "<Role Name>" - 2 Roles to compare, quotes only required when Role Name contains spaces
 
 Then run the example of choice:
 
