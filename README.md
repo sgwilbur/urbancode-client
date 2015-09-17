@@ -1,23 +1,18 @@
 ## Python client for interacting UrbanCode Web APIs
 
- The primary client provides a Pythonic interface to UrbanCode for simplifying
- setup, administration, and testing of UrbanCode tools. The goal is to provide
- some working examples of API access to various pieces of functionality and I
- will refactor reusable bits as I can to make a more usable "client" for future
- use.
+The primary client provides a Pythonic interface to UrbanCode for simplifying setup, administration, and testing of UrbanCode tools. The goal is to provide some working examples of API access to various pieces of functionality and I will refactor reusable bits as I can to make a more usable "client" for future use.
+
+Let me know if you have specific APIs or scenarios that you want to see in action and I can try and make that happen :)
 
 ### Setup
 
-These examples are built and tested with Python2 but I have tried not to do any
-thing or use any pip modules that will break in Python3. Install the requirements
-for these helpers are identified in the requirements.txt file:
+These examples are built and tested with Python2 but I have tried not to do any thing or use any pip modules that will break in Python3. Install the requirements for these helpers are identified in the requirements.txt file:
 
     pip install -r requirements.txt
 
 #### Running examples
 
-Since everything here is adhoc and not using proper modules, to run the examples you
-need to cd to the `examples` directory as the imports are relatively pathed for now.
+Since everything here is adhoc and not using proper modules, to run the examples you need to cd to the `examples` directory as the imports are relatively pathed for now. So as an example I just create a new folder to work in, clone the repo, setup my virtualenv, install the required modules, and run an example.
 
     sgwilbur@gura:~/workspaces$ mkdir uc-testing
     sgwilbur@gura:~/workspaces$ cd uc-testing/
@@ -37,9 +32,8 @@ need to cd to the `examples` directory as the imports are relatively pathed for 
     Also creating executable in urbancode-clients-virtualenv/bin/python
     Installing setuptools, pip...done.
     sgwilbur@gura:~/workspaces/uc-testing$ . ./urbancode-clients-virtualenv/bin/activate
-    (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing$
 
-Install the required modules for the examples
+Then actually running the script you pass in the required parameters:
 
     (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing$ cd urbancode-clients
     (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients$ pip install -r requirements.txt
@@ -54,7 +48,19 @@ Install the required modules for the examples
     Running setup.py install for datadiff
     Successfully installed datadiff-1.1.6 requests-2.7.0
 
-Now you are ready to run the examples:
+Now you are ready to run the examples, I created a template after creating a handful of these so they conform to a standard pattern to some extent. For example calling a specific example with no parameters should output a usage statement.
+
+   (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients/examples$ ./ucd-compare_roles.py
+   Missing required arguments
+   ucd-compare_roles
+   [-h|--help] - Optional, show usage
+   [-v|--verbose] - Optional, turn on debugging
+   -s|--server http[s]://server[:port] - Set server url
+   [-u|--user username (do not supply when using a token) ]
+   --password [password|token] - Supply password or token to connect with
+   "<Role Name>" "<Role Name>" - 2 Roles to compare, quotes only required when Role Name contains spaces
+
+Then run the example of choice:
 
     (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients/examples$ ./ucd-compare_roles.py --server https://ucdandr:9443 --user admin --password admin Developer Observer
     Defined Roles: Administrator, Developer, Observer
