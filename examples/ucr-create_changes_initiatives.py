@@ -30,7 +30,7 @@ password = ''
 base_url = ''
 
 def usage():
-  print ''' ucr-example_template
+  print ''' ucr-create_change_initiatives
   [-h|--help] - Optional, show usage
   [-v|--verbose] - Optional, turn on debugging
   -s|--server http[s]://server[:port] - Set server url
@@ -150,8 +150,6 @@ def __main__():
       typeId = change_type['id']
 
       change =  ucr.create_change( typeId=typeId, name=name, status=status, severity=severity, releaseId=releaseId, applicationId=applicationId, initiativeId=initiativeId, description=description, change_type=change_type)
-
-
 
 if __name__ == '__main__':
   __main__()

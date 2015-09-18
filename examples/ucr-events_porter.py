@@ -35,6 +35,22 @@ import sys
 sys.path.append('..')
 from ucclient import ucclient
 
+debug = 0
+user = ''
+password = ''
+base_url = ''
+
+def usage():
+  print ''' ucd-events_porter
+  [-h|--help] - Optional, show usage
+  [-v|--verbose] - Optional, turn on debugging
+  -s|--server http[s]://server[:port] - Set server url
+  -u|--user username
+  -p|--password password - Supply password
+
+  <Insert specific parameters for this example >
+'''
+
 # Define the columns required for reading and used for writing csv files
 ucr_event_attributes = ['id','name', 'description', 'startDate', 'endDate', 'type', 'version', 'isOneDay', 'releases', 'dateCreated']
 
@@ -128,6 +144,41 @@ def __main__():
   password = 'admin'
   base_url = 'https://172.16.62.130:8443'
 
+  global debug, user, password, base_url
+
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hs:u:p:v", ['help','server=', 'user=', 'password='])
+  except getopt.GetoptError as err:
+    # print help information and exit:
+    print(err) # will print something like "option -a not recognized"
+    usage()
+    sys.exit(2)
+
+  for o, a in opts:
+    if o == '-v':
+    debug = True
+    elif o in ('-h', '--help'):
+    usage()
+    sys.exit()
+    elif o in ( '-s', '--server'):
+    base_url = a
+    elif o in ( '-u', '--user'):
+    user = a
+    elif o in ( '-p', '--password'):
+    password = a
+    else:
+    assert False, "unhandled option"
+    usage()
+    sys.exit()
+
+  if not base_url or not password:
+    print('Missing required arguments')
+    usage()
+    sys.exit()
+
+  # Peel and specfic arguments off the end for this call
+  arg1, arg2 = sys.argv[-2:]
+
   ucr = ucclient( base_url, user, password , 0 )
 
   # Pull the events and cleanup the data before writing it out
@@ -154,4 +205,6 @@ def __main__():
     pprint( events_start[0] )
     pprint( events_readin[0] )
 
-__main__()
+
+if __name__ == '__main__':
+  __main__()

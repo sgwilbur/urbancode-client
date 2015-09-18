@@ -23,12 +23,12 @@ password = ''
 base_url = ''
 
 def usage():
-  print ''' ucd-compare_roles
+  print ''' ucd-get_deployments
   [-h|--help] - Optional, show usage
   [-v|--verbose] - Optional, turn on debugging
   -s|--server http[s]://server[:port] - Set server url
   -u|--user username
-  -p|--password password - Supply password or token to connect with
+  -p|--password password - Supply password 
 
   <Insert specific parameters for this example >
 '''
