@@ -10,6 +10,7 @@ Example use:
 '''
 from pprint import pprint
 
+import pdb
 import sys
 import getopt
 import json
@@ -151,88 +152,128 @@ def __main__():
   ## Start disecting this information into a more useful format
 
   # Get participating applications
-  applications = [ application['name'] for application in release_pipeline['applications'] ]
+  # key by app id for later and store latest version information here!
+  applications = {}
+  for app in pipeline_latest_application_versions:
+    children = []
+    for child in app['children']:
+      children.append( {
+        'id' : child['application']['id'],
+        'name': child['application']['name'],
+        'latestVersion': { 'id': child['id'], 'name': child['name'] },
+      })
+    applications[ app['application']['id'] ] = {
+      'id': app['application']['id'],
+      'name': app['application']['name'],
+      'latestVersion': { 'id': app['id'], 'name': app['name'] },
+      'children': children
+     }
+
+  #pprint( applications )
+
   # Get phaseModel name & environments in a useful format
   my_phases = []
 
   for phase in release_pipeline['phases']:
-    cur_phase = {}
-
-    # First get the name and gates for the current phase
-    cur_phase['name'] = phase['phaseModel']['name']
-    if phase['phaseModel']['gates']:
-      cur_phase['gates'] = [ gate['status']['name'] for gate in phase['phaseModel']['gates'] ]
-    else:
-      cur_phase['gates'] = []
-
-    # Need more digging to find environments, as they are not referenced by lifecyle phase, but by applicationTarget id
-    # creating a dict to key into by id to simplify any access via what is used everywhere else...
-    cur_phase['environments'] = {} # { 'id' : env['name'] }
+    # First build up the basic current phase information
+    cur_phase = {
+      'environments': {},
+      'gates': [ gate['status']['name'] for gate in phase['phaseModel']['gates'] ],
+      'id': phase['id'],
+      'name': phase['phaseModel']['name'],
+    }
 
     for env in phase['environments']:
-      cur_phase['env_id'] = env['id']
+      cur_phase['environments'][ env['id'] ] = {
+        'applicationTargets': {},
+        'id' : env['id'],
+        'name': env['name'],
+        'deployed': [],
+        'deployments': {}
+        }
+
+      # Build a view of what is already deployed
+      for app_id, app in pipeline_all_application_versions.items():
+        if env['id'] in app.keys():
+          cur_phase['environments'][ env['id'] ]['deployed'].append( {
+            'id': app_id,
+            'versionId': app[ env['id'] ]['id'],
+            'version': app[ env['id'] ]['name'] } )
+
+      # Bring in the deployments if they exist
+      if env['id'] in pipeline_release_deployments:
+        # Bring in current deployments for either last or next
+        #   last - provides currently deployed
+        #   next - provides scheduled to be deployed
+        for key, deploy in pipeline_release_deployments[ env['id'] ].items() :
+          # Pull the useful fields from this object
+          cur_phase['environments'][ env['id'] ]['deployments'][ key ] = {
+            'id' : deploy['id'],
+            'status' : deploy['deploymentExecution']['status'],
+            'execution_id' : deploy['deploymentExecution']['id'],
+            'dateCreated' : deploy['dateCreated'],
+            'scheduledDate': deploy['scheduledDate'],
+            # Build a simple list of application/versions & component/versions
+            # Need to handle Snapshots, Applications, and Component levels
+            'versions': [ process_version(version) for version in deploy['versions']  ]
+            }
+
+      # Store the application environments, is this useful...
       for app_env in env['applicationTargets']:
-        cur_phase['environments'][ app_env['id'] ] = { 'id' : app_env['id'], 'name': app_env['name'], 'deployments': {} }
-
-        # Bring in the deployments if they exist
-        if env['id'] in pipeline_release_deployments:
-          ## TODO: pull out the useful deployment info next/last, add version info here
-          cur_phase['env_id'] = env['id']
-          # for either last or next
-          #   last - provides currently deployed
-          #   next - provides scheduled to be deployed
-          for key, deploy in pipeline_release_deployments[ env['id'] ].items() :
-
-            # Pull the useful fields from this object
-            current_deployment = {
-              'id' : deploy['id'],
-              'status' : deploy['deploymentExecution']['status'],
-              'execution_id' : deploy['deploymentExecution']['id'],
-              'dateCreated' : deploy['dateCreated'],
-              'scheduledDate': deploy['scheduledDate'],
-              # Build a simple list of application/versions & component/versions
-              # Need to handle Snapshots, Applications, and Component levels
-              'versions': [ process_version(version) for version in deploy['versions']  ]
-              }
-
-            cur_phase['environments'][ app_env['id'] ]['deployments'][ key ] = current_deployment
+        cur_phase['environments'][ env['id'] ]['applicationTargets'][ app_env['id'] ] = {
+          'id' : app_env['id'],
+          'name': app_env['name']
+          }
 
     # Store in my custom phases array
     my_phases.append( cur_phase )
-
 
   ## At this point all the data I think we need is in release_pipeline and my_phases
   utils.write_pretty_json( 'my_phases.json', my_phases )
   # pprint( my_phases )
 
-  #
   ## Example output of the results that can be formatted or used as a base to tweaking
   ## what information you want to report on.
-  #
-  print( ' Release: %s \n%s\n%s' % ( release_pipeline['name'], utils.javats_tostr( release_pipeline['targetDate'] ), release_pipeline['description'] ) )
-  print( ' Applications: %s ' % (','.join( applications )) )
+  ## This is already getting too complex to be useful, time to switch to a template...
+  print( 'Release: %s \n  %s\n  %s' % ( release_pipeline['name'], utils.javats_tostr( release_pipeline['targetDate'] ), release_pipeline['description'] ) )
+  print( '  Applications: %s ' % (','.join( applications )) )
 
+  print( 'Phases:' )
   for phase in my_phases:
-    print( '\t%s(%s)  Requires[%s]' % ( phase['name'], phase['env_id'], ','.join( phase['gates'] ) ) )
-    #pprint( phase['environments'] )
-    for env in phase['environments'].values():
-      print( '\t\t%s(%s)' % ( env['name'], env['id'] ) )
+    print( '  %s(%s)  Requires[%s]' % ( phase['name'], phase['id'], ','.join( phase['gates'] ) ) )
+
+    for env_id, env in phase['environments'].items():
+      print( '%sEnvironments:' % ('\t' * 1) )
+      print( '%s %s (%s):' % ('\t' * 1, env['name'], env['id']) )
+
+      # Made up of the following application environments
+      print( '%sApplication Targets:' % ('\t' * 2) )
+      for target in env['applicationTargets'].values():
+        print( '%s  %s (%s)' % ( '\t' * 3, target['name'], target['id'] ) )
+
+      print( '%sDeployed: ' % ('\t' * 2) )
+      for app in env['deployed']:
+        print( '%s  %s - %s' % ( '\t' * 3, applications[ app['id'] ]['name'], app['version'] ) )
+
+      # show next and last deployments
+      print( '%sDeployments: ' % ('\t' * 2) )
       for key, deployment in env['deployments'].items():
-        print( '\t\t %s: %s - %s' % ( key, utils.javats_tostr( deployment['scheduledDate'] ), deployment['status'] ) )
-        print( '\t\t\tversions: ')
+        print( '%s%s: %s - %s' % ( '\t' * 3, key, utils.javats_tostr( deployment['scheduledDate'] ), deployment['status'] ) )
+        print( '%sVersions Deployed: ' % ( '\t' * 4 ) )
+
         for version in deployment['versions']:
-          print( '\t\t\t %s: %s v%s [%s]' % ( version['type'], version['name'], version['version'], ','.join( version['statuses']) ) )
+          print( '%s %s: %s v%s [%s]' % ( '\t' * 5, version['type'], version['name'], version['version'], ','.join( version['statuses']) ) )
 
           if version['type'] == 'SUITE':
             for app in version['applications']:
               comps = [ '%s: %s v%s [%s]' % ( comp['type'], comp['name'], comp['version'], ','.join(comp['statuses']) ) for comp in app['components'] ]
-              print( '\t\t\t\t %s: %s v%s [%s]' % ( app['type'], app['name'], app['version'], ','.join(app['statuses']) ) )
+              print( '%s %s: %s v%s [%s]' % ( '\t' * 6, app['type'], app['name'], app['version'], ','.join(app['statuses']) ) )
               for comp in comps:
-                print( '\t\t\t\t\t %s' % comp )
+                print( '%s %s' % ('\t' * 7, comp) )
           else:
             comps = [ '%s: %s v%s [%s]' % ( comp['type'], comp['name'], comp['version'], ','.join(comp['statuses']) ) for comp in version['components'] ]
             for comp in comps:
-              print( '\t\t\t\t %s' % comp )
+              print( '%s %s' % ('\t' * 6,comp) )
 
 if __name__ == '__main__':
   __main__()
