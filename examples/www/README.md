@@ -8,9 +8,9 @@ The current implementation all values are hardcoded and requires that you have a
 
 This is a basic Python setup based n 2.7 and uses standard modules available via pip to get up and running.
 
-   git clone
-   cd uc-clients/examples/www
-   pip install < requirements.txt
+     git clone https://github.com/sgwilbur/urbancode-clients
+     cd uc-clients/examples/www
+     pip install < requirements.txt
 
 See the uc-clients/README.md for and example of running this in a Python Virtual Environment, or where you do not want to make system wide changes.
 
