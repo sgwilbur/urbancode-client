@@ -1,0 +1,9 @@
+{% extends "default.j2" %}
+{% block title %}Select a Release to view the Pipeline for{% endblock %}
+{% block content %}
+    <h1>Select a Release to show the Pipeline for</h1>
+      {% for release in releases %}
+            <li><a href="/pipeline/{{ release.id }}">{{ release.name }}</a></li>
+      {% endfor %}
+    </ul>
+{% endblock %}

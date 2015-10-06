@@ -1,0 +1,72 @@
+{% extends "default.j2" %}
+{% block title %}Viewing pipeline for {{ release_id }}{% endblock %}
+{% block content %}
+
+<h1>Release <a href="{{ base_url }}/release/{{ release_id }}">{{ release_pipeline.name }}</a> Pipeline</h1>
+
+<p>Target Date: {{ release_pipeline.targetDate| javats_tostr }}</p>
+<p>Description:</p>
+<hr/>
+<p>Applications:</p>
+{% for app_id, app in applications.iteritems() %}
+  <a href="{{ base_url }}/application/">{{ app.name }}</a>
+{% endfor %}
+<hr/>
+
+<h2>Phases:</h2>
+
+<div class="phases">
+  {% for phase in my_phases %}
+    <div class="phase">
+      <h3> {{ phase.name }} </h3>
+      <p> Required Statuses: [{{ phase.gates|join(', ') }}] </p>
+
+      {% for env_id, env in phase.environments.iteritems() %}
+       <div class="environment">
+         <h4> <a href="{{ base_url }}/environment/#environments">{{ env.name }} </a></h4>
+
+      <p class="label"> Deployed: </p>
+      <ul>
+        {% for app in env.deployed %}
+          <li> {{ applications[ app.id ].name }} - {{ app['version'] }}</li>
+        {% endfor %}
+      </ul>
+
+      <p class="label"> Deployments: </p>
+      {% for key, deployment in env.deployments.iteritems() %}
+        <p> {{ key }} - <a href="{{base_url}}/scheduledDeployment/{{ deployment.id}}">{{ deployment.scheduledDate|javats_tostr }}</a> - {{ deployment.status }}
+        <div class="versions">
+        <p class="label"> Versions: </p>
+          {% for version in deployment.versions %}
+            <div class="{{ version.type| lower }}">
+            <p> <a href="{{ base_url }}/version/{{ version.id }}">{{ version.name }} - {{ version.version }} [{{ version.statuses|join(', ') }}]</a>
+            {% if version.type == 'SUITE' %}
+              {% for app in version.applications %}
+                <div class="{{ app.type|lower  }}">
+                <p> <a href="{{ base_url }}/version/{{ app.id }}">{{ app.name }} - {{ app.version }} [{{ app.statuses|join(', ') }}] </a></p>
+                  {% for comp in app.components %}
+                    <div class="{{ comp.type|lower}}">
+                      <p> <a href="{{ base_url }}/version/{{ comp.id }}">{{ comp.name }} - {{ comp.version }} - [{{ comp.statuses|join(', ') }}] </a></p>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endfor %} {# version.applications #}
+
+            {% else %}
+              {% for comp in version.components %}
+                <div class="{{ comp.type|lower }}">
+                  <p> <a href="{{ base_url }}/version/{{ comp.id }}">{{ comp.name }} - {{ comp.version }} - [{{ comp.statuses|join(', ') }}] </a></p>
+                </div>
+              {% endfor %}
+            {% endif %}
+            </div>
+          {% endfor %} {# deployment.versions #}
+        </div>
+      
+      {% endfor %} {# env.deployments.iteritems() #}
+      </div>
+      {% endfor %} {# Environments #}
+    </div>
+  {% endfor %} {# phases #}
+</div>
+{% endblock %}

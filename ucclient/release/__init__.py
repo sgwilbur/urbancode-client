@@ -2,6 +2,12 @@ from ucclient import ucclient
 import json
 '''
  UrbanCode Release Client for implemneting any specific behavior for Release.
+
+ See the API for more details:
+
+ conventions:
+ http://www-01.ibm.com/support/knowledgecenter/SS4GCC_6.1.2/com.ibm.urelease.doc/topics/rest_api_ref_conventions.html?lang=en
+ 
 '''
 class ucrclient( ucclient ):
 
@@ -13,7 +19,7 @@ class ucrclient( ucclient ):
 
   initiative_uri = '/initiatives'
 
-  release_uri = '/release'
+  release_uri = '/releases'
   release_editable_uri = '%s/editable' % (release_uri)
 
   '''
@@ -66,11 +72,15 @@ class ucrclient( ucclient ):
   '''
     Release methods
   '''
-  def get_release( self, id ):
-    return self.get_json( uri='%s/%s' % ( self.release_uri, id ) )
+  def get_release( self, id, format='' ):
+    release_format = '?format=%s' % (format) if format else ''
+    return self.get_json( uri='%s/%s%s' % ( self.release_uri, id, release_format ) )
 
+  '''
+   Get a simple list of releases id/name pairs
+  '''
   def get_releases( self ):
-    return self.get_json( uri=self.release_uri )
+    return self.get_json( uri='%s/name' % (self.release_uri) )
 
   def get_releases_editable( self ):
     return self.get_json( uri=self.release_editable_uri )

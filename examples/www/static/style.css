@@ -1,0 +1,54 @@
+
+main
+{
+  font-family: Georgia;
+  font-size: 1em;
+}
+
+.phases
+{
+  border: 0px solid;
+  overflow:hidden;
+}
+
+.phase
+{
+  border: 1px dotted #ddd;
+  display: inline;
+  float: left;
+  font-size: 0.75em;
+  width: 200px;
+}
+
+.environment
+{
+  background: #eee;
+  margin: 0.25em;
+}
+
+.versions
+{
+  margin-left: 0.25em;
+}
+
+.suite
+{
+ color: blue;
+}
+
+.application
+{
+  color: green;
+  margin-left: 0.25em;
+}
+
+.component
+{
+  color: orange;
+  margin-left: 0.25em;
+}
+
+.label
+{
+  font-family: georgia;
+}

@@ -155,6 +155,9 @@ def __main__():
   # key by app id for later and store latest version information here!
   applications = {}
   for app in pipeline_latest_application_versions:
+    if 'children' not in app:
+      pass
+    
     children = []
     for child in app['children']:
       children.append( {
