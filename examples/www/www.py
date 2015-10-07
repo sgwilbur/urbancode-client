@@ -102,7 +102,6 @@ def process_version( version ):
  Setup Application and routes
 '''
 app = Flask(__name__)
-app.jinja_env.filters['javats_tostr'] = utils.javats_tostr
 cache = SimpleCache()
 cache_timeout = 5 * 60
 ucr = ucrclient( base_url, user, password , debug )
@@ -113,6 +112,11 @@ ucr = ucrclient( base_url, user, password , debug )
 @app.context_processor
 def inject_config():
     return dict(user=user, base_url=base_url)
+
+@app.template_filter('timestamptostr')
+def tstostr_filter(s):
+  # Need to return '' value when this is undefined as the util function is not tolerant of empty values
+  return utils.javats_tostr( s ) if s else ''
 
 @app.route("/")
 def index():
@@ -132,25 +136,29 @@ def get_releases():
 @app.route('/pipeline/<release_id>')
 def get_pipeline( release_id ):
 
-  release_pipeline = cache.get('release_pipeline')
+  release_pipeline_key = '%s-release_pipeline' % (release_id)
+  release_pipeline = cache.get( release_pipeline_key )
   if release_pipeline is None:
     release_pipeline = ucr.get_json( '/releases/%s?format=pipeline' % ( release_id ) )
-    cache.set('release_pipeline', release_pipeline, timeout=cache_timeout)
+    cache.set( release_pipeline_key, release_pipeline, timeout=cache_timeout)
 
-  pipeline_release_deployments = cache.get( 'pipeline_release_deployments' )
+  pipeline_release_deployments_key = '%s-pipeline_release_deployments' % (release_id)
+  pipeline_release_deployments = cache.get( pipeline_release_deployments_key )
   if pipeline_release_deployments is None:
     pipeline_release_deployments = ucr.get_json( '/pipelineView/%s/releaseDeployments' % ( release_id ) )
-    cache.set('pipeline_release_deployments', pipeline_release_deployments, timeout=cache_timeout)
+    cache.set( pipeline_release_deployments_key, pipeline_release_deployments, timeout=cache_timeout)
 
-  pipeline_all_application_versions = cache.get( 'pipeline_all_application_versions')
+  pipeline_all_application_versions_key = '%s-pipeline_all_application_versions'
+  pipeline_all_application_versions = cache.get( pipeline_all_application_versions_key )
   if pipeline_all_application_versions is None:
     pipeline_all_application_versions = ucr.get_json( '/pipelineView/%s/allApplicationVersions' % ( release_id ) )
-    cache.set('pipeline_all_application_versions', pipeline_all_application_versions, timeout=cache_timeout)
+    cache.set( pipeline_all_application_versions_key, pipeline_all_application_versions, timeout=cache_timeout)
 
-  pipeline_latest_application_versions = cache.get( 'pipeline_latest_application_versions' )
+  pipeline_latest_application_versions_key = '%s-pipeline_latest_application_versions' % (release_id)
+  pipeline_latest_application_versions = cache.get( pipeline_latest_application_versions_key )
   if pipeline_latest_application_versions is None:
     pipeline_latest_application_versions = ucr.get_json( '/pipelineView/%s/latestApplicationVersions' % ( release_id ) )
-    cache.set('pipeline_latest_application_versions', pipeline_latest_application_versions, timeout=cache_timeout)
+    cache.set( pipeline_latest_application_versions_key, pipeline_latest_application_versions, timeout=cache_timeout)
 
   applications = cache.get( 'applications' )
   if applications is None:

@@ -12,16 +12,33 @@
         {% endblock %}
     </head>
     <body>
-      <nav>
-        {% block nav %}
-        {% endblock %}
-      </nav>
+
         <!--[if lt IE 8]>
             <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
       <main>
-        {% block content %}
-        {% endblock %}
+        <header>
+          <h1> UC API Examples </h1>
+          <nav>
+            {% block nav %}
+            <ul>
+              <li> <a href="/">Main</a></p>
+              <li> <a href="/pipeline">Pipeline Viewer</a> </li>
+            </ul>
+            {% endblock %}
+          </nav>
+        </header>
+        <hr/>
+        <article>
+          {% block content %}
+          {% endblock %}
+        </article>
+        <hr/>
+        <footer>
+          {% block footer %}
+          <p> Connected to <a href="{{ base_url }}">{{ base_url }}</a> as {{ user }}.
+          {% endblock %}
+        </footer>
       </main>
 
       {% block scripts %}

@@ -1,3 +1,21 @@
+nav ul
+{
+  list-style-type: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+nav ul li
+{
+  display: inline;
+  float: left;
+}
+
+nav ul li a {
+    display: block;
+    width: 150px;
+}
 
 main
 {
