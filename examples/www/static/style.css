@@ -1,3 +1,9 @@
+
+body {
+    background-color: #fff;
+    background-image: url('/static/sos.png');
+}
+
 nav ul
 {
   list-style-type: none;
@@ -40,7 +46,7 @@ main
 
 .environment
 {
-  background: #eee;
+  background: #ddd;
   margin: 0.25em;
 }
 

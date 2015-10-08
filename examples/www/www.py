@@ -18,7 +18,7 @@ from werkzeug.contrib.cache import SimpleCache
 debug = 0
 user = 'admin'
 password = 'admin'
-base_url = 'http://ucr02'
+base_url = 'http://192.168.1.121'
 
 
 '''
