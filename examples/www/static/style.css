@@ -57,19 +57,25 @@ main
 
 .suite
 {
- color: blue;
+ background-color: #93B86E;
+ padding: 0.25em;
 }
 
 .application
 {
-  color: green;
-  margin-left: 0.25em;
+  background-color: #CCFF99;
+  margin-left: 0.1em;
+  margin-right: 0.1em;
+  margin-bottom: 0.1em;
+  padding: 0.1em
 }
 
 .component
 {
-  color: orange;
-  margin-left: 0.25em;
+  background-color: #F0FFD1;
+  margin-left: 0.1em;
+  margin-right: 0.1em;
+  padding: 0.1em;
 }
 
 .label
