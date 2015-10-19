@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 '''
- Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
 
-Example use:
-
-./ucd-example_template.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
+Script to trigger a scheduled deployment to run every 15m for any component versions that are passing the required status gates.
 
 '''
 import json
@@ -22,7 +18,7 @@ password = ''
 base_url = ''
 
 def usage():
-  print ''' ucd-example_template
+  print ''' ucd-schedule_deployment
   [-h|--help] - Optional, show usage
   [-v|--verbose] - Optional, turn on debugging
   -s|--server http[s]://server[:port] - Set server url
@@ -65,12 +61,9 @@ def __main__():
     usage()
     sys.exit()
 
-  # Peel and specfic arguments off the end for this call
-  arg1, arg2 = sys.argv[-2:]
-
   ucd = ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+
 
 if __name__ == '__main__':
   __main__()

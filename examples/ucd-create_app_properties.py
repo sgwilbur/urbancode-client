@@ -17,9 +17,9 @@ def __main__():
   user = 'admin'
   password = 'admin'
   base_url = 'https://192.168.1.117'
-
-  applications_uri = '/cli/deploy/application'
   ucd = ucclient( base_url, user, password , debug=0)
+
+
 
   team_name = 'Team1'
   new_team_uri = '/cli/team/create?team=%s&description=%s' % ( team_name, 'description')
@@ -36,6 +36,7 @@ def __main__():
    http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.doc/topics/rest_cli_application.html?lang=en
 
   '''
+  applications_uri = '/cli/application/create'
   app_name = 'Application2'
   print "Try and create %s " % ( app_name )
   new_app = {'name': app_name,'description':'','notificationSchemeId':'','enforceCompleteSnapshots':'false','teamMappings':[], }
@@ -82,6 +83,7 @@ http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.1/com.ibm.udeploy.api.d
   print "Get property %s value on application %s " % ( prop_name, app_name )
   property_get_uri = '/cli/application/getProperty?application=%s&name=%s' % ( app_name, prop_name )
   r = ucd.get( uri=property_get_uri )
-  #ucd.debug_response( r )
+  ucd.debug_response( r )
+
 
 __main__()

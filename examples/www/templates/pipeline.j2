@@ -2,17 +2,28 @@
 {% block title %}Viewing pipeline for {{ release_id }}{% endblock %}
 {% block content %}
 
-<h1>Release <a href="{{ base_url }}/release/{{ release_id }}">{{ release_pipeline.name }}</a> Pipeline</h1>
-<p> Open in <a href="{{ base_url}}/pipelineView">UCR Pipeline View</a> </p>
+<div id="info">
+  <h1>Release <a href="{{ base_url }}/release/{{ release_id }}">{{ release_pipeline.name }}</a> Pipeline</h1>
+  <p> Open in <a href="{{ base_url}}/pipelineView">UCR Pipeline View</a> </p>
 
-<p>Target Date: {{ release_pipeline.targetDate| timestamptostr }}</p>
-<p>Description:</p>
-<hr/>
-<p>Applications:</p>
-{% for app_id, app in applications.iteritems() %}
-  <a href="{{ base_url }}/application/">{{ app.name }}</a>
-{% endfor %}
-<hr/>
+  <p>Target Date: {{ release_pipeline.targetDate| timestamptostr }}</p>
+  <p>Description:</p>
+  <hr/>
+  <p>Applications:</p>
+  {% for app_id, app in applications.iteritems() %}
+    <a href="{{ base_url }}/application/">{{ app.name }}</a>
+  {% endfor %}
+  <div id="legend">
+    <p> Legend:</p>
+    <p style="font-size: xx-small"> Format: </p>
+    <p style="font-size: xx-small">&lt;Name&gt; - &lt;Version&gt; -[&lt;quality statuses&gt;]</p>
+    <p class="suite">Suite</p>
+    <p class="application">Application</p>
+    <p class="component">Component</p>
+  </div>
+</div>
+
+<hr style="clear:both"/>
 
 <h2>Phases:</h2>
 
@@ -69,5 +80,10 @@
       {% endfor %} {# Environments #}
     </div>
   {% endfor %} {# phases #}
+</div>
+
+
+<div id="debug">
+  <pre></pre>
 </div>
 {% endblock %}

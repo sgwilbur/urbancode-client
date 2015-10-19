@@ -13,7 +13,7 @@ def __main__():
   # hard coded
   user = 'admin'
   password = 'admin'
-  base_url = 'https://172.16.62.138'
+  base_url = 'https://192.168.1.117'
 
   # login
   ucd = ucdclient( base_url, user, password , debug=0)

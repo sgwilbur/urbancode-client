@@ -29,6 +29,17 @@ main
   font-size: 1em;
 }
 
+#info
+{
+  clear:both;
+}
+
+#legend
+{
+  float: right;
+  width: 200px;
+  border: 1px dashed #fff;
+}
 .phases
 {
   border: 0px solid;

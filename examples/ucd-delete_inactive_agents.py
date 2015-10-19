@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 '''
  Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
+  Check the usage statement below or run ./ucd-delete_inactive_agents.py --help
 
 Example use:
 
-./ucd-example_template.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
+./ucd-delete_inactive_agents.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
 
 '''
 import json
@@ -22,7 +22,7 @@ password = ''
 base_url = ''
 
 def usage():
-  print ''' ucd-example_template
+  print ''' ucd-delete_inactive_agents
   [-h|--help] - Optional, show usage
   [-v|--verbose] - Optional, turn on debugging
   -s|--server http[s]://server[:port] - Set server url
@@ -64,9 +64,6 @@ def __main__():
     print('Missing required arguments')
     usage()
     sys.exit()
-
-  # Peel and specfic arguments off the end for this call
-  arg1, arg2 = sys.argv[-2:]
 
   ucd = ucdclient( base_url, user, password , debug )
 

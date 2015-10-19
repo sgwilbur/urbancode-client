@@ -1,9 +1,12 @@
+
 import requests
 # quiet warnings for self-signed certificates
 requests.packages.urllib3.disable_warnings()
 
 import json
 import re
+
+
 '''
  UrbanCode Client is the super class to provide the session management and
  wrappers around the high level operations that are shared between all clients.
@@ -57,6 +60,9 @@ class ucclient():
   '''
   def put( self, uri, data={} ):
     return self.session.put( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
+
+  def put_plain( self, uri, data={} ):
+    return self.session.put( self.base_url + uri, data=data, headers={'accept': 'text/plain', 'content-type': 'text/plain'} )
 
   '''
     Post wrappers

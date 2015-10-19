@@ -16,9 +16,9 @@ from flask import render_template
 from werkzeug.contrib.cache import SimpleCache
 
 debug = 0
-user = 'admin'
-password = 'admin'
-base_url = 'http://192.168.1.121'
+user = 'developer'
+password = 'developer'
+base_url = 'https://ucdandr:8443'
 
 
 '''

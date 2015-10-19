@@ -9,6 +9,7 @@ Example use:
 
 '''
 import json
+import urllib
 from pprint import pprint
 
 import sys
@@ -65,12 +66,22 @@ def __main__():
     usage()
     sys.exit()
 
-  # Peel and specfic arguments off the end for this call
-  arg1, arg2 = sys.argv[-2:]
-
   ucd = ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+  #application_id ='aa93dec4-b721-4106-bb1d-c314ccf91286'
+  application_id ='Node+App+2'
+  name = 'ENV'
+  description = 'environment'
+  color = '#00B2EF'
+
+  environment_cli_uri = '/cli/environment/createEnvironment?'
+  environment_cli_params = 'application=%s&name=%s' % ( application_id, name )
+  #environment_cli_params = 'application=%s' % ( application_id )
+
+  # r = ucd.put( uri='%s%s' % (environment_cli_uri, environment_cli_params) )
+  #r = ucd.post( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
+  r = ucd.put_plain( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
+  ucd.debug_response( r )
 
 if __name__ == '__main__':
   __main__()

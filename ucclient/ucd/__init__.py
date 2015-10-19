@@ -1,3 +1,6 @@
+# import ucd modules
+import environment
+
 from ucclient import ucclient
 import json
 '''
@@ -38,4 +41,3 @@ class ucdclient( ucclient ):
     else:
       self.debug_response( r )
       raise Exception( 'Failed to create new AuthorizationRealm')
-    

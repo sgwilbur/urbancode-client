@@ -23,8 +23,8 @@ def __main__():
 
   ucd = ucdclient( base_url, user, password , 0 )
 
-  application_name = 'vl4rl'
-  
+  application_name = 'JPetStore'
+
   ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
   snapshot_name = 'AS-%s' % ( ts )
   snapshot_description = 'Automated snapshot'
