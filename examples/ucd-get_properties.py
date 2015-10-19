@@ -1,176 +1,171 @@
 #!/usr/bin/env python
 '''
-
 Helper library to extract the properties from UCD.
 
-v0.6
+v0.7
 sgwilbur
-
-requirements.txt:
-
-requests==2.0.1
-
 '''
-import os
 import json
-import re
-import requests
 from pprint import pprint
 
+import os
+import sys
+import getopt
+sys.path.append('..')
+from ucclient.ucd import ucdclient
 
-# hard coded for testing
-user        = 'admin'
-passwd      = 'Rat1onal'
-base_url    = 'https://deploy.rational.sl'
-
-filter_app_name    = 'MyerOnline - WebSphere Commerce Server Site'
+debug = 0
+user = 'PasswordIsAuthToken'
+password = ''
+base_url = ''
 verbose = 1
 
-## Simple helper method to print out some session and request info.
-def print_request_details( r, s ):
-    print "r.request.headers: ", r.request.headers
-    print "s.cookies: ", s.cookies
-    print "r.headers: ", r.headers
-    print "r.text: ", r.text 
+def usage():
+  print ''' ucd-example_template
+  [-h|--help] - Optional, show usage
+  [-v|--verbose] - Optional, turn on debugging
+  -s|--server http[s]://server[:port] - Set server url
+  [-u|--user username (do not supply when using a token) ]
+  --password [password|token] - Supply password or token to connect with
+'''
 
-## quick login helper
-def login( s ):
-    s.auth = ( user, passwd )
-    s.verify = False
-    r = s.get( base_url + '/security/user' )
-    my_c =  r.headers['set-cookie']
-    
-    if 'UCD_SESSION_KEY' in my_c: 
-        m = re.search('UCD_SESSION_KEY=(.{36});', my_c )
-        if m:
-            s.headers.update({'UCD_SESSION_KEY': m.group(1) })
-
-## 
-## wrap the get request to return a dict from the json
-def get_dict( s, url ):
-    if verbose:
-        print "Get: ", url
-    
-    r = s.get( url )
-    if r.status_code != 200:
-        print 'HTTP Status: ' + str(r.status_code)
-        print_request_details( r, s )
-        obj = []
-    elif r.text:
-        obj = json.loads( r.text )
-    else:
-        obj = []
-    
-    return obj
-
-##
 def __main__():
-    props = {}
-    s = requests.Session()
-    login( s )    
-    
-    app_rest_uri    = '/rest/deploy/application'
 
-    # Loop over all apps
-    applications = get_dict( s, base_url + app_rest_uri )
-#    pprint ( applications )
+  global debug, user, password, base_url
 
-    # Filter down to a specific app that I want by name, could also do something like
-    # this with tags if desired...
-    applications = [ app for app in applications if app['name'] == filter_app_name ]
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hs:u:p:v", ['help','server=', 'user=', 'password='])
+  except getopt.GetoptError as err:
+  # print help information and exit:
+    print(err) # will print something like "option -a not recognized"
+    usage()
+    sys.exit(2)
 
-    for app in applications:
+  for o, a in opts:
+    if o == '-v':
+      debug = True
+    elif o in ('-h', '--help'):
+      usage()
+      sys.exit()
+    elif o in ( '-s', '--server'):
+      base_url = a
+    elif o in ( '-u', '--user'):
+      user = a
+    elif o in ( '-p', '--password'):
+      password = a
+    else:
+      assert False, "unhandled option"
+      usage()
+      sys.exit()
+
+  if not base_url or not password:
+    print('Missing required arguments')
+    usage()
+    sys.exit()
+
+  ucd = ucdclient( base_url, user, password , debug )
+
+  props = {}
+
+
+  # Loop over all apps
+  app_rest_uri    = '/rest/deploy/application'
+  applications = ucd.get_json( app_rest_uri )
+
+  # Filter down to a specific app that I want by name, could also do something like
+  # this with tags if desired...
+  #filter_app_name    = 'UCD App'
+  #applications = [ app for app in applications if app['name'] == filter_app_name ]
+
+  for app in applications:
         cur_app = {}
-        
+
         app_name = app['name']
         app_id = app['id']
-        
+
         props[ app_name ] = { 'name': app_name, 'id': app_id }
-        
+
         # Get app properties
-        app_properties = get_dict( s, base_url + '/cli/application/getProperties?application=' + app_id )
+        app_properties = ucd.get_json( '/cli/application/getProperties?application=' + app_id )
         app['properties'] = app_properties
-        
+
         # Get all components for the current application, but just take what I want from the component obj via a dict comprehension
-        components = get_dict( s, base_url + '/rest/deploy/application' + '/' + app_id + '/components' )
+        components = ucd.get_json( '/rest/deploy/application' + '/' + app_id + '/components' )
         components = [ { 'name': component['name'], 'id' : component['id'] } for component in components ]
-        
+
         for comp in components:
-#            print comp['name']
-            current_component = get_dict( s, base_url + '/cli/component/getProperties?component=' + comp['id'] )
+            current_component = ucd.get_json( '/cli/component/getProperties?component=' + comp['id'] )
             comp['properties'] = current_component
-            
+
             # Get processes and iterate
-            comp_processes = get_dict( s, base_url + '/rest/deploy/component/' + comp['id'] + '/processes/false' )
+            comp_processes = ucd.get_json( '/rest/deploy/component/' + comp['id'] + '/processes/false' )
             comp_processes = [ { 'name': process['name'], 'id' : process['id'] } for process in comp_processes ]
-            
+
             for comp_process in comp_processes:
-#                pprint( comp_process )
-                #comp_processes = get_dict( s, base_url + '/cli/componentProcess/info?component=' + comp['id'] +'&componentProcess=' + comp_process['name'] )
+                #comp_processes = ucd.get_json( '/cli/componentProcess/info?component=' + comp['id'] +'&componentProcess=' + comp_process['name'] )
                 # TODO: Get properties for the current process
                 comp_process['properties'] = []
-                
+
             comp['processes'] = comp_processes
 
         app['components'] = components
 
         # Loop over each process for the current application
         # TODO: not sure how to get these props?
-        processes = get_dict( s, base_url + '/rest/deploy/application' + '/' + app_id + '/processes/' + 'false' )
+        processes = ucd.get_json('/rest/deploy/application' + '/' + app_id + '/processes/' + 'false' )
         for process in processes:
-#            pprint( process )
-            current_processes = get_dict( s, base_url + '/rest/deploy/applicationProcess/' + process['id'] + '/' + str(process['version']) )
+            current_processes = ucd.get_json( '/rest/deploy/applicationProcess/' + process['id'] + '/' + str(process['version']) )
             process['properties'] = current_processes
-        
+
         app['processes'] = []
 
         # Loop over each environment for the current application, simplify output
-        environments = get_dict( s, base_url + '/rest/deploy/application' + '/' + app_id + '/environments/' + 'false' )
+        environments = ucd.get_json( '/rest/deploy/application' + '/' + app_id + '/environments/' + 'false' )
         environments = [ { 'name': environment['name'], 'id' : environment['id'] } for environment in environments ]
-        
+
         for env in environments:
-            current_env = get_dict( s, base_url + '/rest/deploy/environment/' + env['id'] )
-            
+            current_env = ucd.get_json('/rest/deploy/environment/' + env['id'] )
+
             # Get environment properties
-            env_properties = get_dict( s, base_url + '/cli/environment/getProperties?environment=' + env['id'] )
+            env_properties = ucd.get_json( '/cli/environment/getProperties?environment=' + env['id'] )
             env['properties'] =  env_properties
-            
+
             # Get environment component properties, requires component list to check with
             env_comp_properties = {}
             for component in components:
-                cur_env_comp_properties = get_dict( s, base_url + '/cli/environment/componentProperties?environment=' + env['id'] + '&component=' + component['id'] )
+                cur_env_comp_properties = ucd.get_json( '/cli/environment/componentProperties?environment=' + env['id'] + '&component=' + component['id'] )
                 env_comp_properties[ component['name'] ] = cur_env_comp_properties
-            
+
             env['compProperties'] = env_comp_properties
-            
+
             # Get all resources for current environment
-            base_resources = get_dict( s, base_url + '/cli/environment/getBaseResources?environment=' + env['id'] )
+            base_resources = ucd.get_json( '/cli/environment/getBaseResources?environment=' + env['id'] )
             base_resources = [ { 'id': resource['id'], 'name': resource['name']} for resource in base_resources ]
-#            pprint( base_resources )
-            
+            # print( base_resources )
+
             for resource in base_resources:
-                resource_properties = get_dict( s, base_url + '/cli/resource/getProperties?resource=' + resource['id'] )
+                resource_properties = ucd.get_json( '/cli/resource/getProperties?resource=' + resource['id'] )
                 resource['properties'] = resource_properties
-                
+
             env['resources'] = base_resources
-            
+
         app['environments'] = environments
 
 
-# For reference you can inspect the dict blob I have assembled
-#    pprint( applications )
-#    pprint( applications, depth=3 )
+  # For reference you can inspect the dict blob I have assembled
+  #    pprint( applications )
+  #    pprint( applications, depth=3 )
 
-    with open('properties.html', 'w+') as outfile:
+  with open('properties.html', 'w+') as outfile:
         outfile.write("<html><head></head><body>")
 
         for app in applications:
-            
-            pprint( app )
-            
+
+            #pprint( app )
+
             outfile.write("<hr/>")
             outfile.write( "<h3>"+ app['name'] +" (" + app['id'] +")</h3>" )
-            
+
             outfile.write( "<table border='1'>" )
             outfile.write("<tr>")
             outfile.write("<td> Scope </td>")
@@ -178,8 +173,8 @@ def __main__():
             outfile.write("<td> Name </td>")
             outfile.write("<td> Value </td>")
             outfile.write("<td> Description </td>")
-            outfile.write("</tr>")           
-#           
+            outfile.write("</tr>")
+
             for app_properties in app['properties']:
                 outfile.write("<tr>")
                 outfile.write("<td> application </td>")
@@ -188,7 +183,7 @@ def __main__():
                 outfile.write("<td>" + app_properties['value'] +"</td>")
                 outfile.write("<td>" + app_properties['description'] +"</td>")
                 outfile.write("</tr>")
-#            
+
             for component in app['components']:
                 for component_properties in component['properties']:
                     outfile.write("<td> component </td>")
@@ -197,7 +192,7 @@ def __main__():
                     outfile.write("<td>" + component_properties['value'] +"</td>")
                     outfile.write("<td>" + component_properties['description'] +"</td>")
                     outfile.write("</tr>")
-                
+
                 # For each component process
                 for component_process in component['processes']:
                     for component_process_properties in component_process['properties']:
@@ -207,7 +202,7 @@ def __main__():
                         outfile.write("<td>" + component_process_properties['value'] +"</td>")
                         outfile.write("<td>" + component_process_properties['description'] +"</td>")
                         outfile.write("</tr>")
-#            
+
             for environment in app['environments']:
                 #
                 for cur_prop in environment['properties']:
@@ -235,11 +230,11 @@ def __main__():
                         outfile.write("<td>" + cur_prop['value'] +"</td>")
                         outfile.write("<td>" + cur_prop['description'] +"</td>")
                         outfile.write("</tr>")
-                #
-#            pprint( app['processes'], depth=2 )
-#
+            #
+            #            pprint( app['processes'], depth=2 )
+            #
             for process in app['processes']:
-#                pprint( process['properties'] )
+                # pprint( process['properties'] )
                 for cur_prop in process['properties']:
                     outfile.write("<td> process </td>")
                     outfile.write("<td>" + process['name'] + "</td>")
@@ -247,10 +242,7 @@ def __main__():
                     outfile.write("<td>" + cur_prop['value'] +"</td>")
                     outfile.write("<td>" + cur_prop['description'] +"</td>")
                     outfile.write("</tr>")
-                
             outfile.write( "</table>" )
-
         outfile.write("</body></html>")
 
-
-__main__()  
+__main__()
