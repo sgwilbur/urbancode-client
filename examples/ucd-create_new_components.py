@@ -115,16 +115,8 @@ def __main__():
       raise Exception( 'Failed to Create or Update Component exiting.')
 
   # Add any Tags we need to for this component
-  tag_uri = '/rest/tag/Component'
-  tag_properties = {
-    'properties' : {
-      'ids': [ comp_id ],
-      'name': 'CompTag0'
-    }
-  }
-  r = ucd.put( uri=tag_uri, data=json.dumps( tag_properties) )
-  #tag_uri = '/cli/component/tag?component=%s&tag=%s' % ( comp_id, 'CompTag0')
-  #r = ucd.put( tag_uri )
+  tag_uri = '/cli/component/tag?component=%s&tag=%s' % ( comp_id, 'CompTag0')
+  r = ucd.put( tag_uri )
 
   if r.status_code == 204:
     print( 'Successfully added Tag to component')
