@@ -32,6 +32,7 @@ import copy
 from pprint import pprint
 
 import sys
+import getopt
 sys.path.append('..')
 from ucclient import ucclient
 
@@ -40,6 +41,15 @@ user = ''
 password = ''
 base_url = ''
 
+# Define the columns required for reading and used for writing csv files
+ucr_event_attributes = ['id','name', 'description', 'startDate', 'endDate', 'type', 'version', 'isOneDay', 'releases', 'dateCreated']
+
+csv_delimiter = ','
+csv_quote_char = '\''
+
+'''
+ Usage statement
+'''
 def usage():
   print ''' ucd-events_porter
   [-h|--help] - Optional, show usage
@@ -47,12 +57,9 @@ def usage():
   -s|--server http[s]://server[:port] - Set server url
   -u|--user username
   -p|--password password - Supply password
-
-  <Insert specific parameters for this example >
+  -m|--mode [import|export]
+  -f|--file events.csv - path to file to read from in import mode, or write to in export mode
 '''
-
-# Define the columns required for reading and used for writing csv files
-ucr_event_attributes = ['id','name', 'description', 'startDate', 'endDate', 'type', 'version', 'isOneDay', 'releases', 'dateCreated']
 
 '''
  Write an events object pulled from the /events/ uri, the only significant
@@ -61,6 +68,7 @@ ucr_event_attributes = ['id','name', 'description', 'startDate', 'endDate', 'typ
  2. Cutting off the ms from the startDate & endDate to make them valid epochs
 '''
 def write_csv( events, fname='events.csv' ):
+  global csv_delimiter, csv_quote_char
 
   for event in events:
     # Java epochs time is in miliseconds so throw that part away
@@ -70,8 +78,8 @@ def write_csv( events, fname='events.csv' ):
     # probably want to do this local time, not GMT/UTC ?
     c_start = time.gmtime( start )
     c_end = time.gmtime( end )
-    print( time.strftime('%Y-%m-%d %H:%M:%S'), c_start )
-    print( '%s %s-%s ( %s - %s )' % ( event['name'], start, end, c_start, c_end ) )
+    #print( time.strftime('%Y-%m-%d %H:%M:%S'), c_start )
+    #print( '%s %s-%s ( %s - %s )' % ( event['name'], start, end, c_start, c_end ) )
 
     # put a string format version for people to write?
     event['startDate'] = start
@@ -81,11 +89,8 @@ def write_csv( events, fname='events.csv' ):
     # cleanup type to a simple string rather than embedded type def
     event['type'] = event['type']['name']
 
-    # Handle releases, this is an embedded array, do I need to convert it to something else ?
-
-
   with open(fname, 'wb') as csvfile:
-    csv_writer = csv.writer(csvfile, delimiter=',', quotechar='\\', quoting=csv.QUOTE_ALL)
+    csv_writer = csv.writer(csvfile, delimiter=csv_delimiter, quotechar=csv_quote_char, quoting=csv.QUOTE_ALL)
 
     # write the header columns
     csv_writer.writerow( ucr_event_attributes )
@@ -101,21 +106,26 @@ def write_csv( events, fname='events.csv' ):
  requires the current event_types object to re-embed the eventType object
 '''
 def read_csv(event_types, fname='events.csv'):
+  global csv_delimiter, csv_quote_char
+
   with open(fname, 'rb') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=',', quotechar='\\')
+    csv_reader = csv.reader(csvfile, delimiter=csv_delimiter, quotechar=csv_quote_char)
 
     # Create and events array
     events = []
 
     # skip header row, we know what this is but just confirm they match
-    if csv_reader.next() != ucr_event_attributes:
-      raise Exception( 'Header row does not match the expected colums of: %s' %( ucr_event_attributes ) )
+    header_row = csv_reader.next()
+    if header_row != ucr_event_attributes:
+      raise Exception( 'Header row does not match the expected colums of: \nactual %s \nexpecting %s' %( header_row, ucr_event_attributes ) )
 
     for row in csv_reader:
       event = {}
       # build the event object with the key and index
       for i in range(len( ucr_event_attributes )):
-        event[ unicode( ucr_event_attributes[i] ) ] = unicode(row[i])
+        # Only add non-empty values to the event object for update/creation
+        if row[i]:
+          event[ unicode( ucr_event_attributes[i] ) ] = unicode(row[i])
 
       # Cleanup the data and convert back to proper types from plain strings
 
@@ -139,15 +149,13 @@ def read_csv(event_types, fname='events.csv'):
 '''
 def __main__():
 
-  # hard coded
-  user = 'admin'
-  password = 'admin'
-  base_url = 'https://172.16.62.130:8443'
-
   global debug, user, password, base_url
 
+  mode = ''
+  fname = ''
+
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hs:u:p:v", ['help','server=', 'user=', 'password='])
+    opts, args = getopt.getopt(sys.argv[1:], "hs:u:p:m:f:v", ['help','server=', 'user=', 'password=', 'mode=', 'file='])
   except getopt.GetoptError as err:
     # print help information and exit:
     print(err) # will print something like "option -a not recognized"
@@ -156,55 +164,84 @@ def __main__():
 
   for o, a in opts:
     if o == '-v':
-    debug = True
+      debug = True
     elif o in ('-h', '--help'):
-    usage()
-    sys.exit()
+      usage()
+      sys.exit()
     elif o in ( '-s', '--server'):
-    base_url = a
+      base_url = a
     elif o in ( '-u', '--user'):
-    user = a
+      user = a
     elif o in ( '-p', '--password'):
-    password = a
+      password = a
+    elif o in ( '-m', '--mode' ):
+      mode = a
+    elif o in ( '-f', '--file' ):
+      fname = a
     else:
-    assert False, "unhandled option"
-    usage()
-    sys.exit()
+      assert False, "unhandled option"
+      usage()
+      sys.exit()
 
-  if not base_url or not password:
+  if not base_url or not password or not mode or not fname:
     print('Missing required arguments')
     usage()
     sys.exit()
 
-  # Peel and specfic arguments off the end for this call
-  arg1, arg2 = sys.argv[-2:]
-
   ucr = ucclient( base_url, user, password , 0 )
 
-  # Pull the events and cleanup the data before writing it out
-  r = ucr.get( '/events' )
-  events = r.json()
-  events_start = copy.deepcopy(events)
-  #pprint( events_obj )
+  if mode == 'export':
+    # Pull the events and cleanup the data before writing it out
+    events = ucr.get_json( '/events' )
+    events_start = copy.deepcopy( events )
+    #pprint( events_obj )
 
-  write_csv( events )
+    write_csv( events_start, fname )
 
-  # Now lets' read it back out
-  r = ucr.get( '/eventTypes' )
-  event_types = r.json()
-  events_readin = read_csv( event_types )
-  #pprint( events_readin )
+  elif mode == 'import':
 
-  ###
-  ### Failing on dataCreated which is actually using the ms part of the epoch...
-  ###
-  if events_start == events_readin:
-    print( 'yey!')
+    # Now lets' read it back out
+    event_types = ucr.get_json( '/eventTypes' )
+
+    events_readin = read_csv( event_types, fname=fname )
+
+    for event in events_readin:
+      # pprint( event )
+
+      if 'id' in event:
+        # looks like an existing event, try and update
+        r = ucr.put( uri='/events/%s' % ( event['id'] ), data=json.dumps(event) )
+        if r.status_code in [200, 201]:
+          print( 'Successfully updated event: %s ' % ( r.json()['name'] ) )
+        else:
+          ucr.debug_response( r )
+          print( 'Failed to update event: %s \nserver returned: %s' % ( event, r.text ) )
+      else:
+        r = ucr.post( uri='/events/', data=json.dumps(event) )
+        if r.status_code  in [200, 201]:
+          print( 'Sucessfully created new event: %s ' % ( r.json()['name'] ) )
+        else:
+          ucr.debug_response( r )
+          print( 'Failed to submit event: %s \nserver returned: %s' % (event, r.text ) )
+
+  # elif mode == 'test':
+  #
+  #   events_readin = read_csv( event_types, fname=fname )
+  #
+  #   ###
+  #   ### Failing on dataCreated which is actually using the ms part of the epoch...
+  #   ###
+  #   if events_start == events_readin:
+  #     print( 'yey!')
+  #   else:
+  #     print( 'boo, they ain\'t match')
+  #     pprint( events_start[0] )
+  #     pprint( events_readin[0] )
+
   else:
-    print( 'boo, they ain\'t match')
-    pprint( events_start[0] )
-    pprint( events_readin[0] )
-
+    print('Invalid mode: %s' % (mode) )
+    usage()
+    sys.exit()
 
 if __name__ == '__main__':
   __main__()
