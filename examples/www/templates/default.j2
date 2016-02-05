@@ -9,6 +9,9 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="/static/style.css">
+        <script src="/static/jquery-1.11.3.min.js"></script>
+        {% endblock %}
+        {% block moreheaders %}
         {% endblock %}
     </head>
     <body>
@@ -36,13 +39,13 @@
         <hr/>
         <footer>
           {% block footer %}
-          <p> Connected to <a href="{{ base_url }}">{{ base_url }}</a> as {{ user }}.
+          <p> Connected to <a href="{{ base_url }}">{{ base_url }}</a> as {{ user }} (Cache timeout: {{cache_timeout }} seconds).
           {% endblock %}
         </footer>
       </main>
 
-      {% block scripts %}
-        <script src="/static/jquery-1.11.3.min.js"></script>
+      {% block loadlastscripts %}
+
       {% endblock %}
     </body>
 </html>

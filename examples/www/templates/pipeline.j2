@@ -1,5 +1,33 @@
 {% extends "default.j2" %}
 {% block title %}Viewing pipeline for {{ release_id }}{% endblock %}
+{% block moreheaders %}
+<script>
+ // http://codepen.io/cssjockey/pen/jGzuK
+  $(document).ready(
+    function() {
+	     $('ul.tabs li').click(
+         function() {
+		      var tab_id = $(this).attr('tab-id');
+		      $('ul.tabs li').removeClass('current');
+		      $('.tab-content').removeClass('current');
+          hash = $(location).attr('hash')
+          if( hash != '' )
+          {
+            $(this).addClass('current');
+            $("#"+tab_id).addClass('current');
+          }else {
+            $(hash).addClass('current')
+          }
+	  })
+    hash = $(location).attr('hash')
+    if( hash )
+    {
+      $(hash).addClass('current')
+    }
+  })
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div id="info">
@@ -28,8 +56,17 @@
 <h2>Phases:</h2>
 
 <div class="phases">
+
+    <ul class="tabs">
+      {% for phase in my_phases %}
+        <li class="tab-link{%- if loop.index == 1 %} current{% endif %}" tab-id="{{ phase.id }}">
+          {{ phase.name }} </li>
+      {% endfor %}
+    </ul>
+
   {% for phase in my_phases %}
-    <div class="phase">
+
+    <div class="phase tab-content {%- if loop.index == 1 %} current{% endif %}" id="{{ phase.id }}" >
       <h3> {{ phase.name }} </h3>
       <p> Required Statuses: [{{ phase.gates|join(', ') }}] </p>
 

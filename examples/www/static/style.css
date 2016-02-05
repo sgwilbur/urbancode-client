@@ -44,6 +44,7 @@ main
 {
   border: 0px solid;
   overflow:hidden;
+  width: 90%;
 }
 
 .phase
@@ -52,7 +53,6 @@ main
   display: inline;
   float: left;
   font-size: 0.75em;
-  width: 200px;
 }
 
 .environment
@@ -92,4 +92,32 @@ main
 .label
 {
   font-family: georgia;
+}
+
+ul.tabs{
+  margin: 0px;
+  padding: 0px;
+  list-style: none;
+}
+ul.tabs li{
+  background: none;
+  color: #222;
+  display: inline-block;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+ul.tabs li.current{
+  background: #ddd;
+  color: #222;
+}
+
+.tab-content{
+  display: none;
+  background: #ededed;
+  padding: 15px;
+}
+
+.tab-content.current{
+  display: inherit;
 }

@@ -111,7 +111,7 @@ ucr = ucrclient( base_url, user, password , debug )
 '''
 @app.context_processor
 def inject_config():
-    return dict(user=user, base_url=base_url)
+    return dict(user=user, base_url=base_url, cache_timeout=cache_timeout)
 
 @app.template_filter('timestamptostr')
 def tstostr_filter(s):

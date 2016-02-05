@@ -129,6 +129,7 @@ def __main__():
   # 1. Get specific Release
   #/releases/90e0edce-092d-48bc-8313-5ca81083e7e7?format=pipeline
   release_pipeline = ucr.get_json( '/releases/%s?format=pipeline' % ( release_id ) )
+  pdb.set_trace()
 
   # 2. Get deployments for this Release
   # /pipelineView/90e0edce-092d-48bc-8313-5ca81083e7e7/releaseDeployments
@@ -157,7 +158,7 @@ def __main__():
   for app in pipeline_latest_application_versions:
     if 'children' not in app:
       pass
-    
+
     children = []
     for child in app['children']:
       children.append( {
