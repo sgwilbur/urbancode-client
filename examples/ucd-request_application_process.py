@@ -8,10 +8,11 @@ import json
 from pprint import pprint
 import getopt
 
-import os, sys, inspect
-sys.path.insert( 0, '/Users/sgwilbur/workspaces/uc-clients')
-
+import os, sys, inspect, time
+import random
+sys.path.insert( 0, '/Users/sgwilbur/workspaces/urbancode-client')
 from ucclient.ucd import ucdclient
+
 
 debug = 0
 user = 'PasswordIsAuthToken'
@@ -62,15 +63,33 @@ def __main__():
     usage()
     sys.exit()
 
-  json_fname = sys.argv[-1]
-
   ucd = ucdclient( base_url, user, password , debug )
 
-  with open( json_fname ) as data_file:
-    request_body = json.load(data_file)
+  sleep_time = 30
+  environments = [ 'DEV', 'UAT', 'PROD' ]
+  snapshots = [ 'SNAP-1', 'SNAP-2', 'SNAP-3', 'SNAP-4' ]
 
-  request_id = ucd.put_json( uri='/cli/applicationProcessRequest/request', data=json.dumps( request_body ) )
-  print request_id
+  #for i in range(1, 100):
+  while True:
+
+    #environment = random.choice(environments)
+
+    for environment in environments:
+
+      snapshot = random.choice(snapshots)
+
+      request_body = {
+        'application': 'APP00001',
+        'applicationProcess': 'Install',
+        'environment': environment,
+        'snapshot' : snapshot,
+        'onlyChanged' : 'false'
+      }
+      print '%s: Calling %s on %s environment with snapshot %s' %( request_body['application'], request_body['applicationProcess'], request_body['environment'], request_body['snapshot'] )
+      request_id = ucd.put_json( uri='/cli/applicationProcessRequest/request', data=json.dumps( request_body ) )
+      print request_id
+
+    time.sleep( sleep_time )
 
 if __name__ == '__main__':
   __main__()

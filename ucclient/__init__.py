@@ -61,6 +61,13 @@ class ucclient():
   def put( self, uri, data={} ):
     return self.session.put( self.base_url + uri, data=data, headers={'accept': 'application/json', 'content-type': 'application/json'} )
 
+  def put_json( self, uri, data={}):
+    r = self.put( uri, data )
+    if r.status_code not in [ 200 ]:
+      self.debug_response( r )
+      raise Exception( 'Error calling PUT on %s return HTTP %d' % ( uri, r.status_code ) )
+    return r.json()
+
   def put_plain( self, uri, data={} ):
     return self.session.put( self.base_url + uri, data=data, headers={'accept': 'text/plain', 'content-type': 'text/plain'} )
 
@@ -91,14 +98,32 @@ class ucclient():
     # returning the response object anyway, since some old calls to this method
     return r
 
+  def delete2( self, uri ):
+    r = self.session.delete( self.base_url + uri, headers={ 'accept':'*/*', 'content-type': 'application/x-www-form-urlencoded'} )
+    if r.status_code not in [200, 204]:
+      self.debug_response( r )
+      raise Exception( 'Error calling DELETE on %s returned HTTP %d ' % ( uri, r.status_code ) )
+    # returning the response object anyway, since some old calls to this method
+    return r
+
+
+  def delete3( self, uri, data={} ):
+    r = self.session.delete( self.base_url + uri, data=data, headers={ 'accept':'application/json', 'content-type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'
+} )
+    if r.status_code not in [200, 204]:
+      self.debug_response( r )
+      raise Exception( 'Error calling DELETE on %s returned HTTP %d ' % ( uri, r.status_code ) )
+    # returning the response object anyway, since some old calls to this method
+    return r
+
   '''
    Helper for debugging the response object returned
   '''
   def debug_response( self, response ):
+    print( " self.session.cookies: %s " % ( self.session.cookies ) )
+    print( " self.session.headers: %s " % ( self.session.headers ) )
     print( "         response.url: %s " % ( response.url ) )
     print( "    response.encoding: %s " % ( response.encoding ) )
     print( " response.status_code: %s " % ( response.status_code ) )
-    print( "     response.headers: %s " % ( response.headers ) )
-    print( "      session.cookies: %s " % ( self.session.cookies ) )
     print( "     response.headers: %s " % ( response.headers ) )
     print( "        response.text: %s " % ( response.text ) )

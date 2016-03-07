@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 '''
- Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
 
-Example use:
+Helper script to just return the repo sizes for the the Components in CodeStation.
 
-./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ... argN
+./ucd-get_repo_sizes.py -s https://192.168.1.117 -p xxx
 
 '''
 import json
@@ -70,7 +68,19 @@ def __main__():
 
   ucd = ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+  uri = '/rest/deploy/component/componentSizeReport?rowsPerPage=10&pageNumber=1&orderField=sizeOnDisk&sortType=desc'
+
+  components = ucd.get_json( uri=uri )
+
+  for component in components:
+
+    pprint( component )
+
+    versions_uri = '/rest/deploy/version?rowsPerPage=10&pageNumber=1&orderField=dateCreated&sortType=desc&filterFields=component.id&filterFields=active&filterValue_component.id=%s&filterType_component.id=eq&filterClass_component.id=UUID&filterValue_active=true&filterType_active=eq&filterClass_active=Boolean&outputType=BASIC&outputType=LINKED' % ( component['id'] )
+
+
+    versions_info = ucd.get_json( uri=versions_uri )
+    #pprint( versions_info )
 
 if __name__ == '__main__':
   __main__()

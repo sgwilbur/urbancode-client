@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 '''
- Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
+Helper to pull the contents of a Component Template
 
 Example use:
 
-./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ... argN
+./ucd-get_comp_template.py -s https://192.168.1.117 -p XXX
 
 '''
 import json
@@ -70,7 +69,14 @@ def __main__():
 
   ucd = ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+  #comp_template_id = '5b36f7a2-a458-48bd-b046-7a44656c5861'
+  comp_template_id = '250f14f1-8042-435f-893e-8bc267183c82'
+  comp_template_uri = '/rest/deploy/componentTemplate/%s/' % ( comp_template_id )
+
+  comp_template = ucd.get_json( uri=comp_template_uri)
+
+  pprint( comp_template )
+
 
 if __name__ == '__main__':
   __main__()

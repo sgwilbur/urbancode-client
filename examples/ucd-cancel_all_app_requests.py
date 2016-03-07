@@ -5,7 +5,7 @@
 
 Example use:
 
-./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ... argN
+./ucd-example_template.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
 
 '''
 import json
@@ -70,7 +70,24 @@ def __main__():
 
   ucd = ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+  uri = '/rest/workflow/currentActivity?rowsPerPage=10&pageNumber=1&orderField=startDate&sortType=desc'
+  activities = ucd.get_json( uri )
+
+  #pprint( activities[0] )
+
+  print 'Found %d activites' % (len(activities))
+ # return
+
+  for activity in activities:
+    cancel_uri = '/rest/workflow/%s/cancel' % ( activity['id'] )
+    r = ucd.put( uri=cancel_uri )
+
+    if r.status_code not in [ 200, 201 ]:
+      print( 'Error cancelling')
+      ucd.debug_response( r )
+    else:
+      print( 'I think we cancelled it')
+
 
 if __name__ == '__main__':
   __main__()
