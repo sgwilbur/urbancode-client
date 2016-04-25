@@ -1,8 +1,6 @@
-import sys
-sys.path.append('..')
-from ucclient import resource
+from .. import resource
 
-class environment( ):
+class environment( resource ):
 
   def __init__():
     pass

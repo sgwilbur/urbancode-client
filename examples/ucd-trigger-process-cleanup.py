@@ -9,10 +9,10 @@ Example use:
 
 '''
 import json
-import sys
-import getopt
 from pprint import pprint
 
+import sys
+import getopt
 from ucclient.ucd import ucdclient
 
 debug = 0
@@ -69,7 +69,9 @@ def __main__():
 
   ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
-  # ... Do some stuff ...
+  r = ucd.post( '/rest/historyCleanup/runCleanupNow' )
+
+  ucd.debug_response( r )
 
 if __name__ == '__main__':
   __main__()

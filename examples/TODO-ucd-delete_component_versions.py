@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 '''
- Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
+Example of creating a new component via the API then importing new versions. The documentation shows how to do this via the cli based APIs, if you also inspect the web client in action you can use both these sources to use the REST APIs instead.
+
+Create new Component:
+http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.3/com.ibm.udeploy.api.doc/topics/rest_cli_component_create_put.html
+Import New Version of Component:
+ http://www-01.ibm.com/support/knowledgecenter/SS4GSP_6.1.3/com.ibm.udeploy.api.doc/topics/rest_cli_component_integrate_put.html
 
 Example use:
-
-./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ... argN
+./ucd-create_new_components.py -s https://192.168.1.117 -s https://ucd -u admin -p XXX
 
 '''
 import json
-import sys
-import getopt
 from pprint import pprint
 
+import sys
+import getopt
+sys.path.append('..')
 from ucclient.ucd import ucdclient
 
 debug = 0
@@ -27,7 +31,6 @@ def usage():
   -s|--server http[s]://server[:port] - Set server url
   [-u|--user username (do not supply when using a token) ]
   --password [password|token] - Supply password or token to connect with
-  <Insert specific parameters for this example >
 '''
 
 def __main__():
@@ -64,12 +67,10 @@ def __main__():
     usage()
     sys.exit()
 
-  # Peel and specfic arguments off the end for this call
-  arg1, arg2 = sys.argv[-2:]
+  ucd = ucdclient( base_url, user, password , debug )
 
-  ucd = ucdclient.ucdclient( base_url, user, password , debug )
-
-  # ... Do some stuff ...
+  component_name = 'SVN Component 1'
+  version = '1.1'
 
 if __name__ == '__main__':
   __main__()
