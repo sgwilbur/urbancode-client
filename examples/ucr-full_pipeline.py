@@ -16,11 +16,11 @@ import getopt
 import json
 import time
 
-sys.path.append('..')
+
 from ucclient import ucclient
 from ucclient import utils
-from ucclient.ucd import ucdclient
-from ucclient.release import ucrclient
+from urbancode_client.deploy import ucdclient
+from urbancode_client.release import ucrclient
 
 debug = 0
 user = ''
@@ -108,7 +108,7 @@ def __main__():
     usage()
     sys.exit()
 
-  ucr = ucrclient( base_url, user, password , debug )
+  ucr = ucrclient.ucrclient( base_url, user, password , debug )
 
   # Given a specific release by name, first translate that to the id
 

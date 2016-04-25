@@ -14,10 +14,10 @@ from pprint import pprint
 import sys
 import getopt
 import random
-sys.path.append('..')
+
 from ucclient import ucclient
-from ucclient.ucd import ucdclient
-from ucclient.release import ucrclient
+from urbancode_client.deploy import ucdclient
+from urbancode_client.release import ucrclient
 
 debug = 0
 user = ''
@@ -70,7 +70,7 @@ def __main__():
     sys.exit()
 
   # Login and pull the license url
-  ucr = ucrclient( base_url, user, password , debug )
+  ucr = ucrclient.ucrclient( base_url, user, password , debug )
 
   licenses = ucr.get_json( '/license' )
   # pprint( licenses )

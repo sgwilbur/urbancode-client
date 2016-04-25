@@ -9,11 +9,11 @@ Example use:
 
 '''
 import json
-from pprint import pprint
-
 import sys
 import getopt
-from ucclient.ucd import ucdclient
+from pprint import pprint
+
+from urbancode_client.deploy import ucdclient
 
 debug = 0
 user = 'PasswordIsAuthToken'

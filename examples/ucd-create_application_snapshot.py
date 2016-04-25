@@ -11,8 +11,8 @@ from pprint import pprint
 import time, datetime
 
 import sys
-sys.path.append('..')
-from ucclient.ucd import ucdclient
+
+from urbancode_client.deploy import ucdclient
 
 def __main__():
 
@@ -21,7 +21,7 @@ def __main__():
   password = 'admin'
   base_url = 'https://192.168.1.117'
 
-  ucd = ucdclient( base_url, user, password , 0 )
+  ucd = ucdclient.ucdclient( base_url, user, password , 0 )
 
   application_name = 'JPetStore'
 

@@ -12,8 +12,8 @@ from pprint import pprint
 
 import sys
 import getopt
-sys.path.append('..')
-from ucclient.ucd import ucdclient
+
+from urbancode_client.deploy import ucdclient
 
 debug = 0
 user = 'PasswordIsAuthToken'
@@ -67,7 +67,7 @@ def __main__():
   # Peel and specfic arguments off the end for this call
   arg1, arg2 = sys.argv[-2:]
 
-  ucd = ucdclient( base_url, user, password , debug )
+  ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
   #comp_template_id = '5b36f7a2-a458-48bd-b046-7a44656c5861'
   comp_template_id = '250f14f1-8042-435f-893e-8bc267183c82'

@@ -3,7 +3,7 @@
 import json
 import re
 import sys
-sys.path.append('..')
+
 from ucclient import ucclient
 
 def __main__():

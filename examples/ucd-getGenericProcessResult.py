@@ -10,7 +10,7 @@ from pprint import pprint
 import json
 import re
 import sys
-sys.path.append('..')
+
 from ucclient import ucclient
 
 

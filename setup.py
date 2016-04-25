@@ -1,14 +1,11 @@
 from distutils.core import setup
 
-setup(name='ucclient',
+setup(name='urbancode_client',
       version='0.1',
       description='UrbanCode Client modules for Python',
-      url='http://github.com/sgwilbur/urbancode-clients',
+      url='http://github.com/sgwilbur/urbancode-client',
       author='Sean Wilbur',
       author_email='sgwilbur@gmail.com',
       license='MIT',
-      packages=['ucclient', 'ucclient/ucd', 'ucclient/release'],
-      install_requires=[
-          'requests',
-      ],
-      zip_safe=False)
+      packages=['urbancode_client', 'urbancode_client.deploy', 'urbancode_client.release']
+)

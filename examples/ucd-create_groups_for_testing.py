@@ -4,8 +4,8 @@ import json
 import re
 #from ucclient import ucclient
 import sys
-sys.path.append('..')
-from ucclient.ucd import ucdclient
+
+from urbancode_client.deploy import ucdclient
 
 
 def __main__():
@@ -16,7 +16,7 @@ def __main__():
   base_url = 'https://192.168.1.117'
 
   # login
-  ucd = ucdclient( base_url, user, password , debug=0)
+  ucd = ucdclient.ucdclient( base_url, user, password , debug=0)
 
   '''
    Create an Auth Realm

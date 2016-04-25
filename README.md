@@ -12,7 +12,9 @@ These examples are built and tested with Python2 but I have tried not to do any 
 
 #### Running examples
 
-Since everything here is adhoc and not using proper modules, to run the examples you need to cd to the `examples` directory as the imports are relatively pathed for now. So as an example I just create a new folder to work in, clone the repo, setup my virtualenv, install the required modules, and run an example.
+Since everything here is now a simple module, so until I get in published to the public pypi repos it is still an download and install process, so not ideal but getting there.
+
+To run the examples you can view them in the `examples` directory. So as an example I just create a new folder to work in, clone the repo, setup my virtualenv, install the required modules, and run an example.
 
     sgwilbur@gura:~/workspaces$ mkdir uc-testing
     sgwilbur@gura:~/workspaces$ cd uc-testing/
@@ -33,7 +35,7 @@ Since everything here is adhoc and not using proper modules, to run the examples
     Installing setuptools, pip...done.
     sgwilbur@gura:~/workspaces/uc-testing$ . ./urbancode-clients-virtualenv/bin/activate
 
-Then actually running the script you pass in the required parameters:
+Install the dependencies:
 
     (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing$ cd urbancode-clients
     (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients$ pip install -r requirements.txt
@@ -47,6 +49,54 @@ Then actually running the script you pass in the required parameters:
 
     Running setup.py install for datadiff
     Successfully installed datadiff-1.1.6 requests-2.7.0
+
+And install the module.
+
+    python setup.py install
+    (urbancode-clients-virtualenv)sgwilbur@gura:~/workspaces/uc-testing/urbancode-clients$ python setup.py install
+    running install
+    running build
+    running build_py
+    creating build/lib/urbancode_client
+    copying urbancode_client/__init__.py -> build/lib/urbancode_client
+    copying urbancode_client/common.py -> build/lib/urbancode_client
+    copying urbancode_client/resource.py -> build/lib/urbancode_client
+    copying urbancode_client/utils.py -> build/lib/urbancode_client
+    creating build/lib/urbancode_client/deploy
+    copying urbancode_client/deploy/__init__.py -> build/lib/urbancode_client/deploy
+    copying urbancode_client/deploy/environment.py -> build/lib/urbancode_client/deploy
+    copying urbancode_client/deploy/ucdclient.py -> build/lib/urbancode_client/deploy
+    creating build/lib/urbancode_client/release
+    copying urbancode_client/release/__init__.py -> build/lib/urbancode_client/release
+    copying urbancode_client/release/ucrclient.py -> build/lib/urbancode_client/release
+    running install_lib
+    creating /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    copying build/lib/urbancode_client/__init__.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    copying build/lib/urbancode_client/common.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    creating /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy
+    copying build/lib/urbancode_client/deploy/__init__.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy
+    copying build/lib/urbancode_client/deploy/environment.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/depl
+    oy
+    copying build/lib/urbancode_client/deploy/ucdclient.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy
+    creating /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/release
+    copying build/lib/urbancode_client/release/__init__.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/releas
+    e
+    copying build/lib/urbancode_client/release/ucrclient.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/relea
+    se
+    copying build/lib/urbancode_client/resource.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    copying build/lib/urbancode_client/resource.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    copying build/lib/urbancode_client/utils.py -> /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/__init__.py to __init__.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/common.py to common.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy/__init__.py to __init__.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy/environment.py to environment.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/deploy/ucdclient.py to ucdclient.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/release/__init__.py to __init__.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/release/ucrclient.py to ucrclient.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/resource.py to resource.pyc
+    byte-compiling /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client/utils.py to utils.pyc
+    running install_egg_info
+    Writing /Users/sgwilbur/workspaces/python-virtualenvs/urbancode-clients-virtualenv/lib/python2.7/site-packages/urbancode_client-0.1-py2.7.egg-info
 
 Now you are ready to run the examples, I created a template after creating a handful of these so they conform to a standard pattern to some extent. For example calling a specific example with no parameters should output a usage statement.
 

@@ -13,7 +13,7 @@ import sys
 import getopt
 from pprint import pprint
 
-from ucclient.ucd import ucdclient
+from urbancode_client.deploy import ucdclient
 
 debug = 0
 user = 'PasswordIsAuthToken'

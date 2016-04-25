@@ -37,8 +37,8 @@ from pprint import pprint
 
 import sys
 import getopt
-sys.path.append('..')
-from ucclient.ucd import ucdclient
+
+from urbancode_client.deploy import ucdclient
 
 debug = 0
 role_uri = '/security/role'
@@ -160,7 +160,7 @@ def __main__():
   # Pull the last two items off the arguments list
   role_name1, role_name2 = sys.argv[-2:]
 
-  ucd = ucdclient( base_url, user, password , debug )
+  ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
   # Get teams
   #print( 'Get Teams')

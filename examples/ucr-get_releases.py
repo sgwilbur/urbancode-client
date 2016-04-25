@@ -14,11 +14,11 @@ import time, datetime
 
 import sys
 import getopt
-sys.path.append('..')
+
 from ucclient import ucclient
 from ucclient import utils
-from ucclient.ucd import ucdclient
-from ucclient.release import ucrclient
+from urbancode_client.deploy import ucdclient
+from urbancode_client.release import ucrclient
 
 debug = 0
 user = ''
@@ -86,7 +86,7 @@ def __main__():
   # Peel and specfic arguments off the end for this call
   arg1, arg2 = sys.argv[-2:]
 
-  ucr = ucrclient( base_url, user, password , debug )
+  ucr = ucrclient.ucrclient( base_url, user, password , debug )
 
   start_time_ms = 1438401600000
   end_time_ms = 1441080000000

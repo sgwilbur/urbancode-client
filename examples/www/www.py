@@ -8,8 +8,8 @@ import optparse
 sys.path.append('../..')
 from ucclient import ucclient
 from ucclient import utils
-from ucclient.ucd import ucdclient
-from ucclient.release import ucrclient
+from urbancode_client.deploy import ucdclient
+from urbancode_client.release import ucrclient
 from flask import Flask
 from flask import render_template
 
@@ -104,7 +104,7 @@ def process_version( version ):
 app = Flask(__name__)
 cache = SimpleCache()
 cache_timeout = 5 * 60
-ucr = ucrclient( base_url, user, password , debug )
+ucr = ucrclient.ucrclient( base_url, user, password , debug )
 
 '''
  Add some variables that can be used in templates

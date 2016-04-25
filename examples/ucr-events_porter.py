@@ -33,7 +33,7 @@ from pprint import pprint
 
 import sys
 import getopt
-sys.path.append('..')
+
 from ucclient import ucclient
 
 debug = 0

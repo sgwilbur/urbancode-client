@@ -11,7 +11,7 @@ import getopt
 import os, sys, inspect, time
 import random
 sys.path.insert( 0, '/Users/sgwilbur/workspaces/urbancode-client')
-from ucclient.ucd import ucdclient
+from urbancode_client.deploy import ucdclient
 
 
 debug = 0
@@ -63,7 +63,7 @@ def __main__():
     usage()
     sys.exit()
 
-  ucd = ucdclient( base_url, user, password , debug )
+  ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
   sleep_time = 30
   environments = [ 'DEV', 'UAT', 'PROD' ]
