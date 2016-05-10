@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='urbancode_client',
-      version='0.1',
+      version='0.2',
       description='UrbanCode Client modules for Python',
       url='http://github.com/sgwilbur/urbancode-client',
       author='Sean Wilbur',
