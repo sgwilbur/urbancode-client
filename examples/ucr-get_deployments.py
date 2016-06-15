@@ -28,7 +28,7 @@ def usage():
   [-v|--verbose] - Optional, turn on debugging
   -s|--server http[s]://server[:port] - Set server url
   -u|--user username
-  -p|--password password - Supply password 
+  -p|--password password - Supply password
 
   <Insert specific parameters for this example >
 '''

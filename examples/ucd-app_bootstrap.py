@@ -72,8 +72,13 @@ def __main__():
 
   app_name = 'Application2'
   application = ucd.create_application( app_name )
+  if not application:
+    print( 'App not created, must already exist' )
+    application = ucd.get_application( app_name )
+
 
   components = ['comp1', 'comp2', 'comp3', 'comp4']
+  new_comp_ids = []
 
   for component_name in components:
     print( 'Creating new component %s' % ( component_name ) )
@@ -104,14 +109,46 @@ def __main__():
       print( 'Not created, must already exist' )
       new_comp = ucd.get_component( component_name )
 
+    new_comp_ids.append( new_comp['id'] )
     pprint( new_comp )
+
+    ## Need to add some versions
+    # ./udclient --weburl https://localhost:8443 --username admin --password admin createVersion -component comp1 -name 1.1
+    # ./udclient --weburl https://localhost:8443 --username admin --password admin addVersionFiles -component comp1 -version 1.1 -base . udclient.cmd
+    #
+
+
+    # Add components to app
+    # PUT /rest/deploy/application/19473061-4298-4c12-88a0-ed81be852d19/addComponents
+    # {"components":["97de696d-835a-4392-a2f2-8009e41b7b43","0d905c22-e09b-43c2-a310-c5a6c227a1c2"]}
+
+    add_comps_to_app_uri = '/rest/deploy/application/%s/addComponents' % ( application['id'])
+    components_to_add_body = { 'components': new_comp_ids }
+
+    updated_application = ucd.put_json( uri=add_comps_to_app_uri, data=json.dumps( components_to_add_body ) )
+
+    pprint( updated_application )
+
+
+    application_id ='Node+App+2'
+    name = 'DEV'
+    description = 'environment'
+    color = '#00B2EF'
+
+    environment_create_uri = '/cli/environment/createEnvironment?application=%s&name=%s&description=%s&color=%s' % ( app_name, name, description, color )
+    environment_create_uri = '/cli/environment/createEnvironment?application=%s&name=%s' % ( app_name, name )
+    # TODO: I think this is a bug it seems to only accept text/plain content type
+    environment = ucd.put_plain( uri=environment_create_uri )
+
+    pprint( environment )
+
 
     continue
 
     # Add any Tags we need to for this component
     ucd.tag_component( new_comp['id'], 'CompTag0' )
     # Import new versions
-    ucd.trigger_component_source_import( new_comp['id'], '1.0')
+    # ucd.trigger_component_source_import( new_comp['id'], '1.0')
 
 
   #####

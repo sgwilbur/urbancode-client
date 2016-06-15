@@ -15,10 +15,9 @@ import time, datetime
 import sys
 import getopt
 
-from ucclient import ucclient
-from ucclient import utils
 from urbancode_client.deploy import ucdclient
 from urbancode_client.release import ucrclient
+from urbancode_client import utils
 
 debug = 0
 user = ''

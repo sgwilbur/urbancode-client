@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 '''
+Helper to add agents with a given pattern name and/or tag to a specific resource group.
+
  Example of
-  Check the usage statement below or run ./ucd-example_template.py --help
+  Check the usage statement below or run ./ucd-add_agents_to_resource_group.py --help
 
 Example use:
 
-./ucd-example_template.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
+./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ...
 
 '''
 import json
-import urllib
-from pprint import pprint
-
 import sys
 import getopt
+import re
+from pprint import pprint
 
 from urbancode_client.deploy import ucdclient
 
@@ -66,27 +67,42 @@ def __main__():
     usage()
     sys.exit()
 
+  # Peel and specfic arguments off the end for this call
+  arg1, arg2 = sys.argv[-2:]
+
   ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
-  # https://www.ibm.com/support/knowledgecenter/SS4GSP_6.1.3/com.ibm.udeploy.api.doc/topics/rest_cli_environment_createenvironment_put.html
+  agents = ucd.get_json( '/rest/agent' )
 
-  #application_id ='aa93dec4-b721-4106-bb1d-c314ccf91286'
-  application_id ='Node+App+2'
-  name = 'ENV'
-  description = 'environment'
-  color = '#00B2EF'
+  #pprint( agents )
 
-  environment_cli_uri = '/cli/environment/createEnvironment?'
-  environment_cli_params = 'application=%s&name=%s' % ( application_id, name )
-  #environment_cli_params = 'application=%s' % ( application_id )
+  #  {"name":"ucdandr","agentId":"45bdeeda-a26e-4c85-85bf-0dbee7bdb890","parentId":"2dac4c05-d78b-4ad5-9c6e-dec3a9358aba"}
 
-  # r = ucd.put( uri='%s%s' % (environment_cli_uri, environment_cli_params) )
-  #r = ucd.post( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
-  r = ucd.put_plain( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
-  ucd.debug_response( r )
+  name_regex = re.compile( 'ucd.*' )
 
+  tags = ['prd']
 
+  for agent in agents:
+    pprint( agent )
 
+    if( re.match( name_regex, agent['name'] ) ):
+      print( 'Found an agent matching the pattern: %s ' % (agent['name']) )
+
+      agent_tags = [ tag['name'] for tag in agent['tags'] ]
+
+      # build sets and check length of union
+      if len( set( i for i in tags) & set(i for i in agent_tags)):
+        print( 'Found an agent with tags we are lookign for' )
+        print( 'Tags we want: ', tags )
+        print( '  Agent tags: ', agent_tags )
+
+      data = {
+        "name":     agent['name'],
+        "agentId":  agent['id'],
+        "parentId": "2dac4c05-d78b-4ad5-9c6e-dec3a9358aba"
+        }
+      r = ucd.put( '/rest/resource/resource', data=json.dumps(data) )
+      pprint( r )
 
 if __name__ == '__main__':
   __main__()

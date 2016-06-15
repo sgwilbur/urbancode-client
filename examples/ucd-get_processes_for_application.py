@@ -5,15 +5,13 @@
 
 Example use:
 
-./ucd-example_template.py -s https://192.168.1.117 -p XXX arg1 arg2 ... argN
+./ucd-example_template.py -s https://192.168.1.117 -u user -p XXX arg1 arg2 ... argN
 
 '''
 import json
-import urllib
-from pprint import pprint
-
 import sys
 import getopt
+from pprint import pprint
 
 from urbancode_client.deploy import ucdclient
 
@@ -66,27 +64,16 @@ def __main__():
     usage()
     sys.exit()
 
+  # Peel and specfic arguments off the end for this call
+  arg1, arg2 = sys.argv[-2:]
+
   ucd = ucdclient.ucdclient( base_url, user, password , debug )
 
-  # https://www.ibm.com/support/knowledgecenter/SS4GSP_6.1.3/com.ibm.udeploy.api.doc/topics/rest_cli_environment_createenvironment_put.html
+  application_id = '20a54351-138d-4854-9f74-9a33f27e3e6f'
+  get_process_for_app_uri = '/rest/deploy/applicationProcessRequest/table?rowsPerPage=10&pageNumber=1&orderField=calendarEntry.scheduledDate&sortType=desc&filterFields=application.id&filterValue_application.id=%s&filterType_application.id=eq&filterClass_application.id=UUID&outputType=BASIC&outputType=LINKED' % ( application_id )
+  p = ucd.get_json( uri=get_process_for_app_uri )
 
-  #application_id ='aa93dec4-b721-4106-bb1d-c314ccf91286'
-  application_id ='Node+App+2'
-  name = 'ENV'
-  description = 'environment'
-  color = '#00B2EF'
-
-  environment_cli_uri = '/cli/environment/createEnvironment?'
-  environment_cli_params = 'application=%s&name=%s' % ( application_id, name )
-  #environment_cli_params = 'application=%s' % ( application_id )
-
-  # r = ucd.put( uri='%s%s' % (environment_cli_uri, environment_cli_params) )
-  #r = ucd.post( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
-  r = ucd.put_plain( '/cli/environment/createEnvironment?application=Node+App+2&name=ENV5' )
-  ucd.debug_response( r )
-
-
-
+  pprint( p )
 
 if __name__ == '__main__':
   __main__()

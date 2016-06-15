@@ -1,4 +1,4 @@
-# 
+#
 import json
 from pprint import pprint
 
@@ -139,7 +139,7 @@ class ucdclient( common.ucclient ):
 
   def get_components( self ):
     comp = {}
-    r = self.get( self.applications_uri )
+    r = self.get( self.components_uri )
     if r.status_code == 200:
       comp = r.json()
     else:
@@ -157,7 +157,7 @@ class ucdclient( common.ucclient ):
 
 
   def create_component( self, body ):
-    r = self.put( uri=self.application_create_uri, data=json.dumps(body) )
+    r = self.put( uri=self.component_create_uri, data=json.dumps(body) )
     if r.status_code == 200:
       return r.json()
     elif r.status_code == 400:
