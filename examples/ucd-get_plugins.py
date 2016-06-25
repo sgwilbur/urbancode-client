@@ -69,7 +69,7 @@ def __main__():
   rest_uri_src= '/rest/plugin/sourceConfigPlugins'
 
   plugin_dir  = '/Users/sgwilbur/Dropbox/UCD-plugins/'
-  verbose = 1
+  verbose = 0
   delete_plugins = 1
 
   # Peel and specfic arguments off the end for this call
@@ -80,9 +80,9 @@ def __main__():
   current_plugins = ucd.get_json( rest_uri )
 
   for plugin in current_plugins:
-    print plugin['id']
     print plugin['name'], " (", plugin['version'], ")"
     if verbose:
+      print plugin['id']
       print plugin['pluginId']
       print plugin['version']
       print plugin['versionNumber']
