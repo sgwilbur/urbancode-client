@@ -77,7 +77,7 @@ class ucclient():
 
   def post_json( self, uri, data={} ):
       r = self.post( uri, data )
-      if r.status_code not in [ 201 ]:
+      if r.status_code not in [ 200, 201 ]:
         self.debug_response( r )
         raise Exception( 'Error calling POST on %s returned HTTP %d' % ( uri, r.status_code ) )
       return r.json()
