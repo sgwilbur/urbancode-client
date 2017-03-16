@@ -10,7 +10,11 @@ These examples are built and tested with Python2 but I have tried not to do any 
 
     pip install -r requirements.txt
 
-#### Running examples
+#### In Docker
+
+    docker build -t uc-cli .
+
+### Running examples
 
 Since everything here is now a simple module, so until I get in published to the public pypi repos it is still an download and install process, so not ideal but getting there.
 
@@ -132,3 +136,7 @@ Then run the example of choice:
         Action: View resource templates in this team.
     Only n Observer (1)
         Action: Edit basic settings for components.
+
+Or you can also run in Docker (after building the image above in the Setup section):
+
+    docker run -it uc-cli ucd-compare_roles.py <args>
